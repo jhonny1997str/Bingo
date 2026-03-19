@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bingo JM - TABLAS FIJAS ORIGINALES</title>
+    <style>
+        @page { size: letter; margin: 0; }
+        body {
+            font-family: 'Arial Black', Gadget, sans-serif;
+            background: white; margin: 0; padding: 0;
+            -webkit-print-color-adjust: exact; print-color-adjust: exact;
+        }
+
+        .page-letter {
+            width: 8.5in;
+            height: 11in;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            page-break-after: always;
+        }
+
+        .card-professional {
+            width: 4.17in;
+            height: 6.125in;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            border: 7px solid;
+            background-color: white;
+        }
+
+        .card-azul { border-color: #0ea5e9; }
+        .card-amarillo { border-color: #fbbf24; }
+        .card-rojo { border-color: #ef4444; }
+
+        .card-content { display: flex; flex-direction: column; height: 100%; }
+
+        table.bingo-grid {
+            width: 100%;
+            height: 100%;
+            border-collapse: separate;
+            border-spacing: 2px;
+            flex-grow: 1;
+            table-layout: fixed; /* Cuadros del mismo tamaño */
+        }
+
+        th {
+            background-color: #1e293b;
+            color: white;
+            font-size: 34pt;
+            font-weight: 900;
+            height: 0.9in;
+            border-radius: 6px;
+        }
+
+        td {
+            border: 2px solid #cbd5e1;
+            text-align: center;
+            font-size: 36pt;
+            font-weight: 900;
+            background: white;
+            border-radius: 6px;
+            color: black !important;
+            overflow: hidden;
+        }
+
+        .free-cell-jm {
+            background-color: #f8fafc !important;
+            color: #0ea5e9 !important;
+            font-size: 26pt !important;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+        }
+
+        .footer-box {
+            padding: 5px 15px;
+            border-radius: 8px;
+            font-weight: 900;
+            color: white;
+        }
+
+        .card-azul .footer-box { background-color: #0ea5e9; }
+        .card-amarillo .footer-box { background-color: #fbbf24; color: #7c2d12; }
+        .card-rojo .footer-box { background-color: #ef4444; }
+
+        .suerte-txt { font-size: 11pt; text-transform: uppercase; }
+        .id-txt { font-size: 20pt; min-width: 50px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="print-container"></div>
+
+<script>
+    /* LÓGICA FIJA EXACTA DE TU CÓDIGO BASE */
+    function generarColumnaFija(min, max, seed) {
+        let nums = []; let localSeed = seed;
+        while(nums.length < 5) {
+            localSeed = (localSeed * 9301 + 49297) % 233280;
+            let val = min + Math.floor((localSeed / 233280) * (max - min + 1));
+            if(!nums.includes(val)) nums.push(val);
+        }
+        return nums.sort((a,b) => a-b);
+    }
+
+    const colores = ['azul', 'amarillo', 'rojo'];
+    let html = "";
+
+    for (let p = 0; p < 25; p++) {
+        html += '<div class="page-letter">';
+        for (let i = 1; i <= 2; i++) {
+            let id = (p * 2) + i;
+            if (id > 50) break;
+            let color = colores[(id - 1) % 3];
+
+            /* MULTIPLICADORES FIJOS: 100, 200, 300, 400, 500 */
+            let data = {
+                B: generarColumnaFija(1, 15, id * 100),
+                I: generarColumnaFija(16, 30, id * 200),
+                N: generarColumnaFija(31, 45, id * 300),
+                G: generarColumnaFija(46, 60, id * 400),
+                O: generarColumnaFija(61, 75, id * 500)
+            };
+
+            html += `
+                <div class="card-professional card-${color}">
+                    <div class="card-content">
+                        <table class="bingo-grid">
+                            <thead>
+                                <tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>
+                            </thead>
+                            <tbody>
+                                ${[0,1,2,3,4].map(r => `
+                                    <tr>
+                                        <td>${data.B[r]}</td>
+                                        <td>${data.I[r]}</td>
+                                        ${r===2 ? `<td class="free-cell-jm">JM</td>` : `<td>${data.N[r]}</td>`}
+                                        <td>${data.G[r]}</td>
+                                        <td>${data.O[r]}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="card-footer">
+                            <div class="footer-box suerte-txt">buena suerte</div>
+                            <div class="footer-box id-txt">${id}</div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+        html += '</div>';
+    }
+    document.getElementById('print-container').innerHTML = html;
+</script>
+</body>
+</html>

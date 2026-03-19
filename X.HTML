@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Bingo Master Pro - Tablas Fijas</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 10px; overflow-x: hidden; }
+        .admin-bar { background: #1e293b; padding: 12px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; border: 1px solid #334155; margin-bottom: 15px; }
+        .input-fijas { background: #0f172a; border: 1px solid #38bdf8; color: #fbbf24; padding: 8px; border-radius: 8px; width: 150px; font-weight: bold; outline: none; }
+        .input-search { border: 2px solid #ef4444; width: 80px; }
+        
+        select, button { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        select { background: #0f172a; color: #38bdf8; border: 1px solid #38bdf8; }
+        button#btn-start { background: #0ea5e9; color: white; }
+        button#btn-draw { background: #f59e0b; color: white; display: none; }
+        button#btn-pop { background: #8b5cf6; color: white; }
+        button#btn-check { background: #ef4444; color: white; }
+        button:hover { opacity: 0.8; transform: scale(1.05); }
+
+        .top-display { display: flex; justify-content: space-around; align-items: center; margin-bottom: 20px; padding: 0 20px; gap: 20px; }
+        .history-section { display: flex; flex-direction: column; gap: 8px; min-width: 90px; }
+        .hist-label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 900; text-align: center; }
+        .hist-ball { width: 60px; height: 60px; border-radius: 10px; background: #1e293b; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 2px solid #334155; opacity: 0.4; }
+        .hist-ball.active { opacity: 1; background: white; color: #1e293b; border-color: #38bdf8; }
+        .h-letra { font-size: 12px; color: #ef4444; font-weight: 900; }
+        .h-num { font-size: 24px; font-weight: 900; line-height: 1; }
+
+        /* ANIMACIÓN DE BALOTA */
+        @keyframes rollIn {
+            0% { transform: translateX(-200px) rotate(-720deg) scale(0); opacity: 0; }
+            100% { transform: translateX(0) rotate(0deg) scale(1); opacity: 1; }
+        }
+        .rolling-animation { animation: rollIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; }
+
+        #balota-display { width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle at 30% 30%, #ffffff 0%, #e2e8f0 50%, #94a3b8 100%); box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; align-items: center; justify-content: center; border: 8px solid #cbd5e1; }
+        .balota-letra { font-size: 30px; color: #ef4444; font-weight: 900; }
+        .balota-numero { font-size: 80px; color: #1e293b; font-weight: 900; margin-top: -10px; }
+
+        .mini-map-guide { background: #1e293b; padding: 10px; border-radius: 12px; border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.3); }
+        .mini-map-guide h4 { margin: 0 0 5px 0; font-size: 10px; text-align: center; color: #38bdf8; }
+        .m-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+        .m-cell { width: 25px; height: 25px; background: #334155; border-radius: 4px; border: 1px solid #475569; }
+        .m-cell.target { border: 2px solid #fbbf24; background: rgba(251, 191, 36, 0.1); }
+
+        .bingo-board { background: #1e293b; padding: 15px; border-radius: 15px; border: 2px solid #334155; margin-bottom: 20px; }
+        .bingo-row { display: flex; align-items: center; min-height: 45px; border-bottom: 1px solid #2d3a4f; }
+        .b-head { width: 45px; font-size: 28px; font-weight: 900; color: #38bdf8; border-right: 3px solid #334155; text-align: center; }
+        .b-nums { display: flex; flex-wrap: wrap; gap: 10px; padding-left: 20px; color: #fbbf24; font-weight: 900; font-size: 26px; }
+
+        .status { font-size: 24px; color: #fbbf24; font-weight: 900; text-align: center; margin-bottom: 20px; background: rgba(0,0,0,0.4); padding: 12px; border-radius: 12px; border: 2px dashed #fbbf24; min-height: 40px; }
+
+        .tablas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .card { background: #f1f5f9; color: #1e293b; padding: 10px; border-radius: 10px; border: 2px solid #cbd5e1; position: relative; }
+        .card h3 { font-size: 13px; margin: 0 0 8px 0; text-align: center; color: #64748b; font-weight: 900; }
+        table { width: 100%; border-collapse: collapse; }
+        td { border: 1px solid #cbd5e1; text-align: center; font-weight: 900; background: white; padding: 5px; font-size: 16px; }
+        th { background: #334155; color: white; padding: 4px; font-size: 12px; }
+        .marked { background: #ef4444 !important; color: white; }
+        
+        .searching { border: 4px solid #ef4444 !important; transform: scale(1.1); z-index: 10; box-shadow: 0 0 25px #ef4444; }
+        
+        .winner-letra { border-color: #38bdf8 !important; background: #e0f2fe !important; box-shadow: 0 0 15px #38bdf8; }
+        .winner-lleno { border-color: #fbbf24 !important; background: #fef9c3 !important; box-shadow: 0 0 20px #fbbf24; }
+        .free-cell { background: #fbbf24; font-size: 8px; }
+        .no-sorteado { color: black !important; }
+
+        /* CLASE PARA FIGURA EN AZUL */
+        .figura-azul { background: #0ea5e9 !important; color: white !important; }
+        
+        /* CLASE PARA FIGURA INCOMPLETA EN ROJO */
+        .figura-falta { background: #ef4444 !important; color: white !important; }
+
+        #custom-alert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 30px; border-radius: 20px; font-size: 40px; font-weight: 900; z-index: 1000; display: none; text-align: center; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
+        .alert-success { background: #22c55e; color: white; border: 5px solid #f0fdf4; }
+        .alert-error { background: #ef4444; color: white; border: 5px solid #fef2f2; }
+
+        /* MODAL MÁS ALTO Y BOTÓN PEQUEÑO */
+        #ganador-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; }
+        #ganador-modal .modal-content { width: 95%; max-width: 500px; height: 75vh; display: flex; flex-direction: column; justify-content: center; }
+        #ganador-modal table { height: 100%; }
+        #ganador-modal td { font-size: 30px; padding: 10px; }
+        #ganador-modal h2 { color: #fbbf24; font-size: 30px; margin-bottom: 10px; text-shadow: 0 0 10px #fbbf24; }
+        .btn-cerrar-mini { margin-top: 20px; padding: 8px 20px; background: #ef4444; color: white; border-radius: 8px; font-size: 14px; border: none; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="custom-alert"></div>
+
+<div id="ganador-modal">
+    <h2 id="modal-titulo">¡TABLA GANADORA!</h2>
+    <div id="modal-tabla-space" class="modal-content"></div>
+    <button class="btn-cerrar-mini" onclick="document.getElementById('ganador-modal').style.display='none'">CERRAR ❌</button>
+</div>
+
+<div class="admin-bar">
+    <input type="text" id="lista-tablas" class="input-fijas" placeholder="Tablas (ej: 1, 5, 20)">
+    <select id="modo-juego" onchange="dibujarMapaGuia()">
+        <option value="letra_y_entera">Letra + Entera Llena</option>
+        <option value="solo_letra">Solo Letra</option>
+        <option value="solo_lleno">Solo Lleno</option>
+        <option value="lleno_ing">Lleno ING</option>
+        <option value="letra_medio_ing">Letra + Medio Llena ING</option>
+        <option value="cruz_pequena_ing">Cruz Pequeña ING</option>
+        <option value="cuatro_esquinas">Cuatro Esquinas</option>
+    </select>
+    <select id="tipo-figura" onchange="dibujarMapaGuia()">
+        <option value="L">Figura L</option>
+        <option value="O">Figura O</option>
+        <option value="X">Figura X</option>
+        <option value="Z">Figura Z</option>
+        <option value="cruz_p">Cruz Pequeña</option>
+        <option value="cruz_g">Cruz Grande</option>
+        <option value="L_ing">L en ING</option>
+        <option value="cruz_p_ing">Cruz Pequeña en ING</option>
+        <option value="cuatro_esquinas_ing">Cuatro Esquinas en ING</option>
+        <option value="solo_lleno">Solo Lleno</option>
+        <option value="medio_lleno">Medio Lleno ING</option>
+    </select>
+    <button id="btn-start" onclick="iniciarBingoFijo()">CARGAR JUEGO 🔒</button>
+    <div style="border-left: 2px solid #475569; height: 30px; margin: 0 10px;"></div>
+    <input type="number" id="check-id" class="input-fijas input-search" placeholder="# ID">
+    <button id="btn-check" onclick="verificarTablaManual()">VERIFICAR 🔍</button>
+    <button id="btn-pop" onclick="abrirVentanaTablas()">PANTALLA EXTERNA 🪟</button>
+    <button id="btn-draw" onclick="sacarBalota()">SACAR BALOTA 🎰</button>
+</div>
+
+<div class="top-display">
+    <div class="history-section">
+        <span class="hist-label">Últimas 5</span>
+        <div id="hist-container"></div>
+    </div>
+    <div id="balota-display">
+        <div class="balota-letra" id="display-l">--</div>
+        <div class="balota-numero" id="display-n">--</div>
+    </div>
+    <div class="mini-map-guide">
+        <h4>MAPA DE FIGURA</h4>
+        <div class="m-grid" id="guia-visual"></div>
+    </div>
+</div>
+
+<div class="bingo-board">
+    <div class="bingo-row"><div class="b-head">B</div><div class="b-nums" id="row-B"></div></div>
+    <div class="bingo-row"><div class="b-head">I</div><div class="b-nums" id="row-I"></div></div>
+    <div class="bingo-row"><div class="b-head">N</div><div class="b-nums" id="row-N"></div></div>
+    <div class="bingo-row"><div class="b-head">G</div><div class="b-nums" id="row-G"></div></div>
+    <div class="bingo-row"><div class="b-head">O</div><div class="b-nums" id="row-O"></div></div>
+</div>
+
+<div id="status-board" class="status">SISTEMA LISTO</div>
+<div class="tablas-grid" id="grid-tablas"></div>
+
+<script>
+    let tablas = [], sequence = [], balotasSacadas = [], ultimas5 = [];
+    let acumulados = { B:[], I:[], N:[], G:[], O:[] };
+    let ganadorLetraId = null, ganadorLlenoId = null;
+    let ventanaExterna = null;
+
+    function lanzarAlerta(msj, tipo) {
+        const el = document.getElementById('custom-alert');
+        el.innerText = msj;
+        el.className = tipo === 'ok' ? 'alert-success' : 'alert-error';
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 3000);
+    }
+
+    function verificarTablaManual() {
+        const id = parseInt(document.getElementById('check-id').value);
+        if(!id) return;
+        const tabla = tablas.find(t => t.id === id);
+        if(!tabla) return alert("Esa tabla no está en juego.");
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('searching'));
+        const res = verificarGanadorInterno(tabla);
+        const card = document.getElementById(`card-${id}`);
+        card.classList.add('searching');
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        const modo = document.getElementById('modo-juego').value;
+        let gano = (modo === "solo_letra" && res.tieneLetra) || (modo === "solo_lleno" && res.tieneLleno) || (res.tieneLetra || res.tieneLleno);
+        
+        if(gano) {
+            lanzarAlerta("¡CORRECTO! TABLA #" + id + " GANADORA", "ok");
+        } else {
+            lanzarAlerta("¡TABLA #" + id + " NO HA GANADO AÚN!", "error");
+        }
+        mostrarTablaEnGrande(tabla, gano, res);
+    }
+
+    function mostrarTablaEnGrande(t, gano = true, res = null) {
+        const fig = document.getElementById('tipo-figura').value;
+        const modo = document.getElementById('modo-juego').value;
+        const cols = ['B','I','N','G','O'];
+        let html = `<table><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>`;
+        
+        for (let r = 0; r < 5; r++) {
+            html += `<tr>`;
+            cols.forEach((col, cIndex) => {
+                let val = t.data[col][r];
+                let esParteFigura = false;
+                if(fig === "solo_lleno") {
+                    esParteFigura = true;
+                } else if(fig === "medio_lleno") {
+                    esParteFigura = (cIndex >= 1 && cIndex <= 3);
+                } else if(modo === "solo_lleno") {
+                    esParteFigura = true;
+                } else if(modo === "lleno_ing") {
+                    esParteFigura = (cIndex >= 1 && cIndex <= 3);
+                } else {
+                    esParteFigura = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4-r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4-r))) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                }
+                
+                let esParteLleno = false;
+                if(modo === "lleno_ing" || modo === "letra_medio_ing") {
+                    esParteLleno = (cIndex >= 1 && cIndex <= 3);
+                } else if(modo === "solo_lleno") {
+                    esParteLleno = true;
+                } else if(modo === "cruz_pequena_ing") {
+                    esParteLleno = (cIndex >= 1 && cIndex <= 3) && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3));
+                } else if(modo === "cuatro_esquinas") {
+                    esParteLleno = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
+                } else {
+                    esParteLleno = true; // Para "letra_y_entera"
+                }
+                
+                let clase = "";
+                if(val === null) clase = "free-cell";
+                else if(gano && res && res.tieneLetra && res.tieneLleno && modo.includes("letra")) {
+                    // Modo mixto: mostrar ambas partes en azul si ambas ganaron
+                    if(esParteFigura || esParteLleno) clase = "figura-azul";
+                    else if(balotasSacadas.includes(val)) clase = "marked";
+                    else clase = "no-sorteado";
+                } else if(gano && res && res.tieneLetra && modo.includes("letra")) {
+                    // Mostrar SOLO la letra en azul
+                    if(esParteFigura && balotasSacadas.includes(val)) clase = "figura-azul";
+                    else if(esParteFigura) clase = "figura-falta";
+                    else if(balotasSacadas.includes(val)) clase = "marked";
+                    else clase = "no-sorteado";
+                } else if(gano && res && res.tieneLleno && !modo.includes("solo_letra")) {
+                    // Mostrar SOLO el lleno/medio lleno en azul
+                    if(esParteLleno && balotasSacadas.includes(val)) clase = "figura-azul";
+                    else if(esParteLleno) clase = "figura-falta";
+                    else if(balotasSacadas.includes(val)) clase = "marked";
+                    else clase = "no-sorteado";
+                } else if(!gano) {
+                    // Tabla no ganó: mostrar qué falta en rojo
+                    if(esParteFigura || esParteLleno) {
+                        clase = balotasSacadas.includes(val) ? "figura-azul" : "figura-falta";
+                    } else if(balotasSacadas.includes(val)) clase = "marked";
+                    else clase = "no-sorteado";
+                } else {
+                    // Fallback
+                    if(balotasSacadas.includes(val)) clase = "marked";
+                    else clase = "no-sorteado";
+                }
+
+                html += `<td class="${clase}">${val === null ? 'FREE' : val}</td>`;
+            });
+            html += `</tr>`;
+        }
+        html += `</table>`;
+        
+        let titulo = "TABLA #" + t.id;
+        if(gano) {
+            if(res && res.tieneLetra && modo.includes("letra")) titulo += " - GANADORA (LETRA)";
+            else if(res && res.tieneLleno) titulo += " - GANADORA (LLENO)";
+            else titulo += " GANADORA!";
+        } else {
+            titulo += " - INCOMPLETA";
+        }
+        
+        document.getElementById('modal-titulo').innerText = titulo;
+        document.getElementById('modal-tabla-space').innerHTML = html;
+        document.getElementById('ganador-modal').style.display = 'flex';
+    }
+
+    function cantarBingo(tipo, id) {
+        if ('speechSynthesis' in window) {
+            const mensaje = new SpeechSynthesisUtterance();
+            mensaje.text = `¡Bingo! Ganador de ${tipo}, tabla número ${id}`;
+            mensaje.lang = 'es-ES';
+            window.speechSynthesis.speak(mensaje);
+        }
+    }
+
+    function dibujarMapaGuia() {
+        const fig = document.getElementById('tipo-figura').value;
+        const modo = document.getElementById('modo-juego').value;
+        let html = "";
+        for(let r=0; r<5; r++) {
+            for(let c=0; c<5; c++) {
+                let isTarget = false;
+                if(modo === "solo_lleno") {
+                    isTarget = true;
+                } else if(modo === "lleno_ing") {
+                    isTarget = (c >= 1 && c <= 3);
+                } else {
+                    isTarget = (fig === "L" && (c === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || c === 0 || c === 4)) || (fig === "X" && (c === r || c === (4-r))) || (fig === "Z" && (r === 0 || r === 4 || c === (4-r))) || (fig === "cruz_p" && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cruz_g" && (c === 2 || r === 2)) || (fig === "L_ing" && ((c === 1) || (r === 4 && c >= 1 && c <= 3))) || (fig === "cruz_p_ing" && c >= 1 && c <= 3 && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cuatro_esquinas_ing" && c >= 1 && c <= 3 && ((r === 0 && (c === 1 || c === 3)) || (r === 4 && (c === 1 || c === 3))));
+                }
+                html += `<div class="m-cell ${isTarget?'target':''}"></div>`;
+            }
+        }
+        document.getElementById('guia-visual').innerHTML = html;
+    }
+
+    function generarColumnaFija(min, max, seed) {
+        let nums = []; let localSeed = seed;
+        while(nums.length < 5) {
+            localSeed = (localSeed * 9301 + 49297) % 233280;
+            let val = min + Math.floor((localSeed / 233280) * (max - min + 1));
+            if(!nums.includes(val)) nums.push(val);
+        }
+        return nums.sort((a,b) => a-b);
+    }
+
+    function iniciarBingoFijo() {
+        const input = document.getElementById('lista-tablas').value;
+        if(!input) return alert("Por favor ingresa los números de las tablas.");
+        const idsTablas = input.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+        tablas = []; balotasSacadas = []; ultimas5 = [];
+        acumulados = { B:[], I:[], N:[], G:[], O:[] };
+        ganadorLetraId = null; ganadorLlenoId = null;
+        document.getElementById('grid-tablas').innerHTML = "";
+        ['B','I','N','G','O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
+        document.getElementById('status-board').innerHTML = "¡JUEGO INICIADO!";
+        document.getElementById('btn-draw').style.display = "inline-block";
+        initHistorialUI();
+        dibujarMapaGuia();
+        idsTablas.forEach(id => {
+            let t = { id: id, data: {
+                B: generarColumnaFija(1, 15, id * 100), I: generarColumnaFija(16, 30, id * 200),
+                N: generarColumnaFija(31, 45, id * 300), G: generarColumnaFija(46, 60, id * 400),
+                O: generarColumnaFija(61, 75, id * 500)
+            }};
+            t.data.N[2] = null;
+            tablas.push(t);
+            renderTabla(t);
+        });
+        sequence = Array.from({length: 75}, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+        if(ventanaExterna && !ventanaExterna.closed) actualizarVentanaExterna();
+    }
+
+    function initHistorialUI() {
+        let h = "";
+        for(let i=0; i<5; i++) h += `<div class="hist-ball" id="hb-${i}"><div class="h-letra">-</div><div class="h-num">-</div></div>`;
+        document.getElementById('hist-container').innerHTML = h;
+    }
+
+    function renderTabla(t) {
+        let html = `<div class="card" id="card-${t.id}"><h3>TABLA #${t.id}</h3><table><tr><th>B</th><th>I</th><th>N</th><th>G</th><th>O</th></tr>`;
+        for (let f = 0; f < 5; f++) {
+            html += `<tr>${['B','I','N','G','O'].map(l => {
+                let val = t.data[l][f];
+                if(val === null) return `<td class="free-cell">FREE</td>`;
+                return `<td id="t${t.id}-${val}">${val}</td>`;
+            }).join('')}</tr>`;
+        }
+        document.getElementById('grid-tablas').innerHTML += html + `</table></div>`;
+    }
+
+    function abrirVentanaTablas() {
+        if (!ventanaExterna || ventanaExterna.closed) ventanaExterna = window.open("", "BingoTablas", "width=1200,height=800");
+        actualizarVentanaExterna();
+    }
+
+    function actualizarVentanaExterna() {
+        if (!ventanaExterna || ventanaExterna.closed) return;
+        const estilos = document.querySelector('style').innerHTML;
+        const contenidoTablas = document.getElementById('grid-tablas').innerHTML;
+        const statusActual = document.getElementById('status-board').innerText;
+        ventanaExterna.document.head.innerHTML = "<title>Tablas Externas</title><style>" + estilos + " body{background:#0f172a; padding:20px;}</style>";
+        ventanaExterna.document.body.innerHTML = '<div class="status">' + statusActual + '</div><div class="tablas-grid">' + contenidoTablas + '</div>';
+    }
+
+    function sacarBalota() {
+        if(sequence.length === 0 || ganadorLlenoId !== null) return;
+        let n = sequence.shift();
+        let l = n<=15?'B':n<=30?'I':n<=45?'N':n<=60?'G':'O';
+        balotasSacadas.push(n);
+        acumulados[l].push(n); acumulados[l].sort((a,b) => a-b);
+        document.getElementById(`row-${l}`).innerHTML = acumulados[l].map(num => `<span>${num}</span>`).join('');
+        ultimas5.unshift({l, n}); if(ultimas5.length > 5) ultimas5.pop();
+        ultimas5.forEach((val, i) => {
+            let el = document.getElementById(`hb-${i}`);
+            el.innerHTML = `<div class="h-letra">${val.l}</div><div class="h-num">${val.n}</div>`;
+            el.classList.add('active');
+        });
+        
+        // REINICIAR ANIMACIÓN DE BALOTA
+        const display = document.getElementById('balota-display');
+        display.classList.remove('rolling-animation');
+        void display.offsetWidth; // TRUCO PARA REINICIAR CSS
+        display.classList.add('rolling-animation');
+        
+        document.getElementById('display-l').innerText = l;
+        document.getElementById('display-n').innerText = n;
+        
+        for (let t of tablas) {
+            let cell = document.getElementById(`t${t.id}-${n}`);
+            if(cell) cell.classList.add('marked');
+            let res = verificarGanadorInterno(t);
+            let modo = document.getElementById('modo-juego').value;
+            if (ganadorLetraId === null && res.tieneLetra && modo !== "solo_lleno" && modo !== "lleno_ing" && modo !== "cruz_pequena_ing" && modo !== "cuatro_esquinas") {
+                ganadorLetraId = t.id;
+                document.getElementById(`card-${t.id}`).classList.add('winner-letra');
+                actualizarStatus();
+                cantarBingo("Figura", t.id);
+            }
+            if (ganadorLlenoId === null && res.tieneLleno) {
+                if (t.id === ganadorLetraId) continue;
+                ganadorLlenoId = t.id;
+                document.getElementById(`card-${t.id}`).classList.add('winner-lleno');
+                actualizarStatus();
+                actualizarVentanaExterna();
+                cantarBingo("Bingo Lleno", t.id);
+                return;
+            }
+        }
+        actualizarVentanaExterna();
+    }
+
+    function verificarGanadorInterno(t) {
+        const fig = document.getElementById('tipo-figura').value, modo = document.getElementById('modo-juego').value;
+        const cols = ['B','I','N','G','O'];
+        let tieneLetra = true, tieneLleno = true;
+        for(let r=0; r<5; r++) {
+            cols.forEach((col, cIndex) => {
+                let num = t.data[col][r]; if(num === null) return;
+                if(modo === "lleno_ing") { if((col==='I' || col==='N' || col==='G') && !balotasSacadas.includes(num)) tieneLleno = false; }
+                else if(modo === "letra_medio_ing") { 
+                    if((col==='I' || col==='N' || col==='G') && !balotasSacadas.includes(num)) tieneLleno = false;
+                }
+                else if(modo === "cruz_pequena_ing") {
+                    let isCruzIng = (col==='I' || col==='N' || col==='G') && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3));
+                    if(isCruzIng && !balotasSacadas.includes(num)) tieneLleno = false;
+                }
+                else if(modo === "cuatro_esquinas") {
+                    let isEsquina = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
+                    if(isEsquina && !balotasSacadas.includes(num)) tieneLleno = false;
+                }
+                else { if(!balotasSacadas.includes(num)) tieneLleno = false; }
+                let esParte = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4-r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4-r))) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                if(esParte && !balotasSacadas.includes(num)) tieneLetra = false;
+            });
+        }
+        return { tieneLetra, tieneLleno };
+    }
+
+    function actualizarStatus() {
+        let txt = "";
+        // Quitar anuncios de ganadores
+        document.getElementById('status-board').innerText = txt || "¡JUEGO EN CURSO!";
+    }
+    window.onload = dibujarMapaGuia;
+</script>
+</body>
+</html>
