@@ -927,19 +927,21 @@
                 alert('Por favor ingresa un ID de sesión válido');
                 return;
             }
-            
-            gameSessionId = sessionId.trim();
-            isHost = false;
-            console.log('Uniéndose a sesión:', gameSessionId);
-            document.getElementById('session-info').innerHTML = `🎮 Sesión: ${sessionId.substring(0, 12)}... (CLIENTE)`;
-            alert(`¡Uniéndote a sesión!\nID: ${gameSessionId}`);
-            
-            // Escuchar cambios en el estado del juego
-            database.ref('games/' + sessionId).on('value', (snapshot) => {
-                const gameData = snapshot.val();
-                if(gameData) {
-                    console.log('Datos recibidos:', gameData);
-                    syncGameState(gameData);
+
+                // A veces el script aún no inicializa Firebase/Database (caché o carga lenta).
+                // Reintentar en unos ms si aún no está listo.
+                if (typeof database === 'undefined' || database === null) {
+                    console.warn('Firebase Database aún no inicializado, reintentando...');
+                    setTimeout(() => joinGameSession(sessionId), 250);
+                    return;
+                }
+
+                gameSessionId = sessionId.trim();
+                isHost = false;
+                console.log('Uniéndose a sesión:', gameSessionId);
+                document.getElementById('session-info').innerHTML = `🎮 Sesión: ${sessionId.substring(0, 12)}... (CLIENTE)`;
+                alert(`¡Uniéndote a sesión!\nID: ${gameSessionId}`);
+
                 }
             });
         } catch (error) {
