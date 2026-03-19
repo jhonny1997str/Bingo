@@ -21,7 +21,8 @@
         
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        // Usamos var para evitar el error de "cannot access 'database' before initialization" si se llama antes de que se ejecute esta línea.
+        var database = firebase.database();
     </script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 10px; overflow-x: hidden; }
