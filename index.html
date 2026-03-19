@@ -736,22 +736,36 @@
             return;
         }
         
-        // REGISTRAR LA TABLA
+        // REGISTRAR LOCALMENTE
         tablasRegistradas.add(tablaId);
         
-        // AGREGAR A LA LISTA MANUAL
+        // ACTUALIZAR INTERFAZ
         const currentList = document.getElementById('lista-tablas').value;
         const ids = currentList ? currentList.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n)) : [];
         ids.push(tablaId);
         document.getElementById('lista-tablas').value = ids.join(', ');
-        
-        // ACTUALIZAR UI
         actualizarListaTablas();
-        updateFirebase(); // Sincronizar con Firebase
-        document.getElementById('scanner-status').innerHTML = `<span style="color: #22c55e;">✅ Tabla #${tablaId} registrada exitosamente</span>`;
+        
+        // --- SINCRONIZACIÓN CLAVE ---
+        if(gameSessionId) {
+            // Si soy el Host (PC), uso la función normal
+            if(isHost) {
+                updateFirebase();
+            } else {
+                // Si soy el Celular (Cliente), envío SOLO la tabla nueva a la lista de Firebase
+                database.ref('games/' + gameSessionId + '/tablasRegistradas').once('value').then((snapshot) => {
+                    let tablasRemotas = snapshot.val() || [];
+                    if(!tablasRemotas.includes(tablaId)) {
+                        tablasRemotas.push(tablaId);
+                        database.ref('games/' + gameSessionId + '/tablasRegistradas').set(tablasRemotas);
+                    }
+                });
+            }
+        }
+        
+        document.getElementById('scanner-status').innerHTML = `<span style="color: #22c55e;">✅ Tabla #${tablaId} sincronizada</span>`;
         lanzarAlerta(`¡Tabla #${tablaId} registrada!`, "ok");
         
-        // VIBRACIÓN SI ES POSIBLE
         if(navigator.vibrate) {
             navigator.vibrate(200);
         }
@@ -982,6 +996,7 @@
     }
     
     function updateFirebase() {
+        // Solo el HOST (PC) tiene permiso de actualizar el estado completo (balotas e historial)
         if(!gameSessionId || !isHost) return;
         
         const gameData = {
