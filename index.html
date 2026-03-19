@@ -2,12 +2,36 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Bingo Master Pro - Tablas Fijas</title>
+    <title>Bingo Master Pro - Multiplayer</title>
     <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+    <script>
+        // CONFIGURACIÓN FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUdtJUBVdkzt04TZHXBrltdbJ_JGuNVd8",
+            authDomain: "bingo-6b13c.firebaseapp.com",
+            databaseURL: "https://bingo-6b13c-default-rtdb.firebaseio.com",
+            projectId: "bingo-6b13c",
+            storageBucket: "bingo-6b13c.firebasestorage.app",
+            messagingSenderId: "293638869804",
+            appId: "1:293638869804:web:bce15686adf2ccf2f39289",
+            measurementId: "G-LKWYRGF7Q6"
+        };
+        
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 10px; overflow-x: hidden; }
         .admin-bar { background: #1e293b; padding: 12px; border-radius: 12px; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; border: 1px solid #334155; margin-bottom: 15px; }
-        .input-fijas { background: #0f172a; border: 1px solid #38bdf8; color: #fbbf24; padding: 8px; border-radius: 8px; width: 150px; font-weight: bold; outline: none; }
+        .session-controls { display: flex; gap: 10px; align-items: center; margin-right: 20px; }
+        .session-controls button { padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+        .session-controls #btn-create-session { background: #8b5cf6; color: white; }
+        .session-controls #btn-join-session { background: #06b6d4; color: white; }
+        .session-controls input { padding: 8px; border-radius: 6px; border: 1px solid #38bdf8; width: 200px; }
+        #session-info { font-size: 12px; color: #fbbf24; font-weight: bold; }
         .input-search { border: 2px solid #ef4444; width: 80px; }
         
         select, button { padding: 10px 15px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
@@ -193,6 +217,12 @@
 </div>
 
 <div class="admin-bar">
+    <div class="session-controls">
+        <button id="btn-create-session" onclick="createGameSession()">🎮 Crear Sesión</button>
+        <input type="text" id="session-input" placeholder="ID de sesión para unirte">
+        <button id="btn-join-session" onclick="joinGameSession(document.getElementById('session-input').value)">🔗 Unirse</button>
+        <div id="session-info">Sin sesión activa</div>
+    </div>
     <input type="text" id="lista-tablas" class="input-fijas" placeholder="Tablas (ej: 1, 5, 20) o escanea QR">
     <select id="modo-juego" onchange="dibujarMapaGuia()">
         <option value="letra_y_entera">Letra + Entera Llena</option>
@@ -282,6 +312,10 @@
     let tablasRegistradas = new Set(); // Tablas ya registradas en el juego actual
     let scannerActivo = false;
     let html5QrCode = null;
+    
+    // VARIABLES PARA MULTIPLAYER
+    let gameSessionId = null;
+    let isHost = false; // true si esta instancia controla el juego
 
     function lanzarAlerta(msj, tipo) {
         const el = document.getElementById('custom-alert');
@@ -564,6 +598,7 @@
             }
         }
         actualizarVentanaExterna();
+        updateFirebase(); // Sincronizar con Firebase
     }
 
     function verificarGanadorInterno(t) {
@@ -710,6 +745,7 @@
         
         // ACTUALIZAR UI
         actualizarListaTablas();
+        updateFirebase(); // Sincronizar con Firebase
         document.getElementById('scanner-status').innerHTML = `<span style="color: #22c55e;">✅ Tabla #${tablaId} registrada exitosamente</span>`;
         lanzarAlerta(`¡Tabla #${tablaId} registrada!`, "ok");
         
@@ -869,6 +905,113 @@
         dibujarMapaGuia();
         actualizarListaTablas();
     };
+
+    // FUNCIONES DE SINCRONIZACIÓN MULTIPLAYER
+    function createGameSession() {
+        try {
+            gameSessionId = 'game_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            isHost = true;
+            console.log('Sesión creada:', gameSessionId);
+            document.getElementById('session-info').innerHTML = `🎮 Sesión: ${gameSessionId.substring(0, 12)}... (HOST)`;
+            alert(`¡Sesión creada!\nID: ${gameSessionId}\n\nCopia este ID para unirte desde otro dispositivo.`);
+            return gameSessionId;
+        } catch (error) {
+            console.error('Error creando sesión:', error);
+            alert('Error creando sesión: ' + error.message);
+        }
+    }
+    
+    function joinGameSession(sessionId) {
+        try {
+            if (!sessionId || sessionId.trim() === '') {
+                alert('Por favor ingresa un ID de sesión válido');
+                return;
+            }
+            
+            gameSessionId = sessionId.trim();
+            isHost = false;
+            console.log('Uniéndose a sesión:', gameSessionId);
+            document.getElementById('session-info').innerHTML = `🎮 Sesión: ${sessionId.substring(0, 12)}... (CLIENTE)`;
+            alert(`¡Uniéndote a sesión!\nID: ${gameSessionId}`);
+            
+            // Escuchar cambios en el estado del juego
+            database.ref('games/' + sessionId).on('value', (snapshot) => {
+                const gameData = snapshot.val();
+                if(gameData) {
+                    console.log('Datos recibidos:', gameData);
+                    syncGameState(gameData);
+                }
+            });
+        } catch (error) {
+            console.error('Error uniéndose a sesión:', error);
+            alert('Error uniéndose a sesión: ' + error.message);
+        }
+    }
+    
+    function syncGameState(gameData) {
+        if(gameData.tablasRegistradas) {
+            tablasRegistradas = new Set(gameData.tablasRegistradas);
+            updateTablasRegistradasUI();
+        }
+        if(gameData.balotasSacadas) {
+            balotasSacadas = gameData.balotasSacadas;
+            updateBalotasUI();
+        }
+        if(gameData.ultimas5) {
+            ultimas5 = gameData.ultimas5;
+            updateHistorialUI();
+        }
+    }
+    
+    function updateFirebase() {
+        if(!gameSessionId || !isHost) return;
+        
+        const gameData = {
+            tablasRegistradas: Array.from(tablasRegistradas),
+            balotasSacadas: balotasSacadas,
+            ultimas5: ultimas5,
+            timestamp: Date.now()
+        };
+        
+        database.ref('games/' + gameSessionId).set(gameData);
+    }
+    
+    function updateTablasRegistradasUI() {
+        actualizarListaTablas();
+    }
+    
+    function updateBalotasUI() {
+        // Actualizar la visualización de balotas sacadas
+        ['B','I','N','G','O'].forEach(letra => {
+            const row = document.getElementById(`row-${letra}`);
+            row.innerHTML = acumulados[letra].map(num => 
+                `<div class="ball ${balotasSacadas.includes(num) ? 'drawn' : ''}">${num}</div>`
+            ).join('');
+        });
+    }
+    
+    function updateHistorialUI() {
+        ultimas5.forEach((balota, index) => {
+            const ballEl = document.getElementById(`hb-${index}`);
+            if(balota) {
+                const letra = getLetra(balota);
+                const numero = balota;
+                ballEl.innerHTML = `<div class="h-letra">${letra}</div><div class="h-num">${numero}</div>`;
+                ballEl.classList.add('active');
+            } else {
+                ballEl.innerHTML = `<div class="h-letra">-</div><div class="h-num">-</div>`;
+                ballEl.classList.remove('active');
+            }
+        });
+    }
+    
+    function getLetra(num) {
+        if(num <= 15) return 'B';
+        if(num <= 30) return 'I';
+        if(num <= 45) return 'N';
+        if(num <= 60) return 'G';
+        return 'O';
+    }
 </script>
 </body>
 </html>
