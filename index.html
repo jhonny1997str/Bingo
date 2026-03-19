@@ -640,7 +640,10 @@
 
     // FUNCIONES PARA SISTEMA QR
     function nuevoJuego() {
-        // RESET COMPLETO DEL JUEGO
+        // 1. Confirmación para no borrar por error
+        if (!confirm("¿Deseas iniciar un nuevo juego? Esto borrará las tablas y balotas de todos los dispositivos.")) return;
+
+        // RESET COMPLETO DE VARIABLES LOCALES
         tablas = [];
         sequence = [];
         balotasSacadas = [];
@@ -648,7 +651,7 @@
         acumulados = { B:[], I:[], N:[], G:[], O:[] };
         ganadorLetraId = null;
         ganadorLlenoId = null;
-        tablasRegistradas.clear(); // LIMPIAR TABLAS REGISTRADAS
+        tablasRegistradas.clear(); 
         
         // LIMPIAR UI
         document.getElementById('grid-tablas').innerHTML = "";
@@ -659,12 +662,28 @@
         initHistorialUI();
         actualizarListaTablas();
         
+        // --- LA PARTE CLAVE: LIMPIAR FIREBASE ---
+        // Solo el PC (Host) debe ejecutar este borrado en la nube
+        if(gameSessionId && isHost) {
+            const resetData = {
+                tablasRegistradas: [],
+                balotasSacadas: [],
+                ultimas5: [null, null, null, null, null],
+                timestamp: Date.now()
+            };
+            
+            // Usamos .set() para sobreescribir TODO lo anterior por datos vacíos
+            database.ref('games/' + gameSessionId).set(resetData)
+                .then(() => console.log("Firebase reseteado con éxito"))
+                .catch(err => console.error("Error reseteando Firebase:", err));
+        }
+
         // DETENER SCANNER SI ESTÁ ACTIVO
         if(scannerActivo) {
             stopScanner();
         }
         
-        lanzarAlerta("¡NUEVO JUEGO INICIADO! Escanea QR o ingresa tablas manualmente", "ok");
+        lanzarAlerta("¡JUEGO REINICIADO! Los datos se borraron en todos los dispositivos", "ok");
     }
 
     function toggleScanner() {
@@ -988,19 +1007,20 @@
     }
     
     function syncGameState(gameData) {
-        if(gameData.tablasRegistradas) {
-            tablasRegistradas = new Set(gameData.tablasRegistradas);
-            updateTablasRegistradasUI();
-        }
-        if(gameData.balotasSacadas) {
-            balotasSacadas = gameData.balotasSacadas;
-            updateBalotasUI();
-        }
-        if(gameData.ultimas5) {
-            ultimas5 = gameData.ultimas5;
-            updateHistorialUI();
-        }
-    }
+    // 1. Sincronizar Tablas (si no hay, ponemos un Set vacío)
+    tablasRegistradas = new Set(gameData.tablasRegistradas || []);
+    updateTablasRegistradasUI();
+    
+    // 2. Sincronizar Balotas (si no hay, ponemos array vacío)
+    balotasSacadas = gameData.balotasSacadas || [];
+    updateBalotasUI();
+    
+    // 3. Sincronizar Historial (si no hay, ponemos los 5 espacios en blanco)
+    ultimas5 = gameData.ultimas5 || [null, null, null, null, null];
+    updateHistorialUI();
+
+    console.log("Sincronización completa con Firebase");
+}
     
     function updateFirebase() {
         // Solo el HOST (PC) tiene permiso de actualizar el estado completo (balotas e historial)
