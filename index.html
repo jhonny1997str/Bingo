@@ -909,19 +909,35 @@
     };
 
     // FUNCIONES DE SINCRONIZACIÓN MULTIPLAYER
-    function createGameSession() {
-        try {
-            gameSessionId = 'game_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            isHost = true;
-            console.log('Sesión creada:', gameSessionId);
-            document.getElementById('session-info').innerHTML = `🎮 Sesión: ${gameSessionId.substring(0, 12)}... (HOST)`;
-            alert(`¡Sesión creada!\nID: ${gameSessionId}\n\nCopia este ID para unirte desde otro dispositivo.`);
-            return gameSessionId;
-        } catch (error) {
-            console.error('Error creando sesión:', error);
-            alert('Error creando sesión: ' + error.message);
+   function createGameSession() {
+    try {
+        gameSessionId = 'game_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        isHost = true;
+        console.log('Sesión creada:', gameSessionId);
+        
+        // Actualizar la interfaz
+        document.getElementById('session-info').innerHTML = `🎮 Sesión: ${gameSessionId.substring(0, 12)}... (HOST)`;
+
+        // Intentar copiar automáticamente al portapapeles
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(gameSessionId).then(() => {
+                // Si se copia con éxito, avisamos con un prompt por si acaso
+                prompt("¡ID generado y COPIADO al portapapeles! Úsalo para unirte:", gameSessionId);
+            }).catch(err => {
+                // Si falla el copiado automático (por permisos del navegador)
+                prompt("¡Sesión creada! Copia el ID manualmente aquí:", gameSessionId);
+            });
+        } else {
+            // Plan B: Si el navegador es muy antiguo o no tiene HTTPS
+            prompt("¡Sesión creada! Copia el ID manualmente aquí:", gameSessionId);
         }
+
+        return gameSessionId;
+    } catch (error) {
+        console.error('Error creando sesión:', error);
+        alert('Error creando sesión: ' + error.message);
     }
+}
     
     function joinGameSession(sessionId) {
         try {
