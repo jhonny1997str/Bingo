@@ -1529,8 +1529,37 @@
 
         function syncGameState(gameData) {
             // 1. Sincronizar Tablas (si no hay, ponemos un Set vacío)
-            tablasRegistradas = new Set(gameData.tablasRegistradas || []);
+            let nuevasTablasRemotas = gameData.tablasRegistradas || [];
+            tablasRegistradas = new Set(nuevasTablasRemotas);
             updateTablasRegistradasUI();
+            
+            // Si soy host y el juego está corriendo, agrego automáticamente tablas nuevas enviadas por clientes
+            if (isHost && tablas.length > 0) {
+                let agregado = false;
+                nuevasTablasRemotas.forEach(id => {
+                    if (!tablas.find(t => t.id === id)) {
+                        let t = {
+                            id: id, data: {
+                                B: generarColumnaFija(1, 15, id * 100), I: generarColumnaFija(16, 30, id * 200),
+                                N: generarColumnaFija(31, 45, id * 300), G: generarColumnaFija(46, 60, id * 400),
+                                O: generarColumnaFija(61, 75, id * 500)
+                            }
+                        };
+                        t.data.N[2] = null;
+                        tablas.push(t);
+                        renderTabla(t);
+                        balotasSacadas.forEach(n => {
+                            let cell = document.getElementById(`t${t.id}-${n}`);
+                            if (cell) cell.classList.add('marked');
+                        });
+                        agregado = true;
+                    }
+                });
+                if (agregado) {
+                    lanzarAlerta("¡Nuevas tablas escaneadas agregadas automáticamente!", "ok");
+                    if (ventanaExterna && !ventanaExterna.closed) actualizarVentanaExterna();
+                }
+            }
 
             // 2. Sincronizar Balotas (si no hay, ponemos array vacío)
             balotasSacadas = gameData.balotasSacadas || [];
@@ -1575,8 +1604,8 @@
             ultimas5.forEach((balota, index) => {
                 const ballEl = document.getElementById(`hb-${index}`);
                 if (balota) {
-                    const letra = getLetra(balota);
-                    const numero = balota;
+                    const numero = typeof balota === 'object' ? balota.n : balota;
+                    const letra = typeof balota === 'object' ? balota.l : getLetra(numero);
                     ballEl.innerHTML = `<div class="h-letra">${letra}</div><div class="h-num">${numero}</div>`;
                     ballEl.classList.add('active');
                 } else {
