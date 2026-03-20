@@ -963,35 +963,76 @@
                 return alert("❌ No hay tablas registradas. Escanea códigos QR usando el botón 'SCANNER QR 📱' o ingresa números manualmente (ej: 1, 5, 20)");
             }
 
-            // VALIDAR TABLAS REPETIDAS
+            // VALIDAR TABLAS REPETIDAS EN EL INPUT
             const idsUnicos = new Set(idsTablas);
             if (idsUnicos.size !== idsTablas.length) {
                 const duplicadas = idsTablas.filter((id, index) => idsTablas.indexOf(id) !== index);
                 return alert("❌ ERROR: Tablas REPETIDAS encontradas: " + [...new Set(duplicadas)].join(', ') + "\n\nNo puedes cargar tablas duplicadas. Por favor usa números diferentes.");
             }
-            tablas = []; balotasSacadas = []; ultimas5 = [];
-            acumulados = { B: [], I: [], N: [], G: [], O: [] };
-            ganadorLetraId = null; ganadorLlenoId = null;
-            document.getElementById('grid-tablas').innerHTML = "";
-            ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
-            document.getElementById('status-board').innerHTML = "¡JUEGO INICIADO!";
-            document.getElementById('btn-draw').style.display = "inline-block";
-            initHistorialUI();
-            dibujarMapaGuia();
-            idsTablas.forEach(id => {
-                let t = {
-                    id: id, data: {
-                        B: generarColumnaFija(1, 15, id * 100), I: generarColumnaFija(16, 30, id * 200),
-                        N: generarColumnaFija(31, 45, id * 300), G: generarColumnaFija(46, 60, id * 400),
-                        O: generarColumnaFija(61, 75, id * 500)
+
+            let juegoEnCurso = tablas.length > 0;
+
+            if (juegoEnCurso) {
+                // JUEGO EN CURSO: Solo agregar tablas nuevas
+                let nuevasTablasAgregadas = 0;
+                idsTablas.forEach(id => {
+                    if (!tablas.find(t => t.id === id)) {
+                        let t = {
+                            id: id, data: {
+                                B: generarColumnaFija(1, 15, id * 100), I: generarColumnaFija(16, 30, id * 200),
+                                N: generarColumnaFija(31, 45, id * 300), G: generarColumnaFija(46, 60, id * 400),
+                                O: generarColumnaFija(61, 75, id * 500)
+                            }
+                        };
+                        t.data.N[2] = null;
+                        tablas.push(t);
+                        renderTabla(t);
+                        tablasRegistradas.add(id);
+
+                        // Marcar balotas que ya salieron en la nueva tabla
+                        balotasSacadas.forEach(n => {
+                            let cell = document.getElementById(`t${t.id}-${n}`);
+                            if (cell) cell.classList.add('marked');
+                        });
+                        nuevasTablasAgregadas++;
                     }
-                };
-                t.data.N[2] = null;
-                tablas.push(t);
-                renderTabla(t);
-            });
-            sequence = Array.from({ length: 75 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
-            if (ventanaExterna && !ventanaExterna.closed) actualizarVentanaExterna();
+                });
+                
+                if (nuevasTablasAgregadas > 0) {
+                    actualizarListaTablas();
+                    updateFirebase();
+                    lanzarAlerta(`¡Se han agregado ${nuevasTablasAgregadas} tablas nuevas al juego en curso!`, "ok");
+                    if (ventanaExterna && !ventanaExterna.closed) actualizarVentanaExterna();
+                } else {
+                    lanzarAlerta("No se detectaron tablas nuevas para agregar.", "error");
+                }
+            } else {
+                // INICIO DE JUEGO NORMAL
+                tablas = []; balotasSacadas = []; ultimas5 = [];
+                acumulados = { B: [], I: [], N: [], G: [], O: [] };
+                ganadorLetraId = null; ganadorLlenoId = null;
+                document.getElementById('grid-tablas').innerHTML = "";
+                ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
+                document.getElementById('status-board').innerHTML = "¡JUEGO INICIADO!";
+                document.getElementById('btn-draw').style.display = "inline-block";
+                initHistorialUI();
+                dibujarMapaGuia();
+                idsTablas.forEach(id => {
+                    let t = {
+                        id: id, data: {
+                            B: generarColumnaFija(1, 15, id * 100), I: generarColumnaFija(16, 30, id * 200),
+                            N: generarColumnaFija(31, 45, id * 300), G: generarColumnaFija(46, 60, id * 400),
+                            O: generarColumnaFija(61, 75, id * 500)
+                        }
+                    };
+                    t.data.N[2] = null;
+                    tablas.push(t);
+                    tablasRegistradas.add(id);
+                    renderTabla(t);
+                });
+                sequence = Array.from({ length: 75 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+                if (ventanaExterna && !ventanaExterna.closed) actualizarVentanaExterna();
+            }
         }
 
         function initHistorialUI() {
