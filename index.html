@@ -149,6 +149,15 @@
             100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3); }
         }
 
+        @keyframes blink-winner {
+            0%, 100% { background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 0 10px #f59e0b; transform: scale(1); border-color: #fbbf24; }
+            50% { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 30px #22c55e, inset 0 0 15px white; transform: scale(1.1); border-color: #fff; color: white;}
+        }
+
+        .alerta-ganador {
+            animation: blink-winner 0.6s infinite !important;
+        }
+
         button#btn-pop {
             background: #8b5cf6;
             color: white;
@@ -942,11 +951,11 @@
             document.getElementById('ganador-modal').style.display = 'flex';
         }
 
-        function cantarBingo(tipo, id) {
+        function cantarBalota(letra, numero) {
             if ('speechSynthesis' in window) {
-                const mensaje = new SpeechSynthesisUtterance();
-                mensaje.text = `¡Bingo! Ganador de ${tipo}, tabla número ${id}`;
+                const mensaje = new SpeechSynthesisUtterance(`${letra} ${numero}`);
                 mensaje.lang = 'es-ES';
+                mensaje.rate = 1.0;
                 window.speechSynthesis.speak(mensaje);
             }
         }
@@ -1054,6 +1063,7 @@
                 ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
                 document.getElementById('status-board').innerHTML = "¡JUEGO INICIADO!";
                 document.getElementById('btn-draw').style.display = "inline-block";
+                document.getElementById('btn-draw').classList.remove('alerta-ganador');
                 initHistorialUI();
                 dibujarMapaGuia();
                 idsTablas.forEach(id => {
@@ -1101,6 +1111,9 @@
             let n = sequence.shift();
             let l = n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O';
             balotasSacadas.push(n);
+
+            // Cantar la balota en voz alta
+            cantarBalota(l, n);
             acumulados[l].push(n); acumulados[l].sort((a, b) => a - b);
             document.getElementById(`row-${l}`).innerHTML = acumulados[l].map(num => `<span>${num}</span>`).join('');
             ultimas5.unshift({ l, n }); if (ultimas5.length > 5) ultimas5.pop();
@@ -1128,7 +1141,7 @@
                     ganadorLetraId = t.id;
                     document.getElementById(`card-${t.id}`).classList.add('winner-letra');
                     actualizarStatus();
-                    cantarBingo("Figura", t.id);
+                    document.getElementById('btn-draw').classList.add('alerta-ganador');
                 }
                 if (ganadorLlenoId === null && res.tieneLleno) {
                     if (t.id === ganadorLetraId) continue;
@@ -1136,7 +1149,7 @@
                     document.getElementById(`card-${t.id}`).classList.add('winner-lleno');
                     actualizarStatus();
                     actualizarVentanaExterna();
-                    cantarBingo("Bingo Lleno", t.id);
+                    document.getElementById('btn-draw').classList.add('alerta-ganador');
                     // NO TERMINAR EL JUEGO - PERMITIR CONTINUAR
                 }
             }
@@ -1208,6 +1221,7 @@
             document.getElementById('grid-tablas').innerHTML = "";
             document.getElementById('status-board').innerHTML = "NUEVO JUEGO - ESCANEA QR o INGRESA MANUALMENTE";
             document.getElementById('btn-draw').style.display = "none";
+            document.getElementById('btn-draw').classList.remove('alerta-ganador');
             document.getElementById('lista-tablas').value = "";
             ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
             initHistorialUI();
