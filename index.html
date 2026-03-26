@@ -1150,32 +1150,51 @@
             document.getElementById('ganador-modal').style.display = 'flex';
         }
 
-        // Pre-cargar voces al arrancar (necesario en HTTPS / GitHub Pages)
-        let _vocesListas = false;
-        function _iniciarVoces() {
-            const voces = window.speechSynthesis.getVoices();
-            if (voces.length > 0) _vocesListas = true;
+        // ============ FIX SPEECH SYNTHESIS PARA HTTPS / GITHUB PAGES ============
+        // Chrome en HTTPS suspende el AudioContext hasta que el usuario interactúa.
+        // Desbloqueamos en el primer clic de cualquier parte de la página.
+        let _audioDesbloqueado = false;
+
+        function _desbloquearAudio() {
+            if (_audioDesbloqueado) return;
+            _audioDesbloqueado = true;
+
+            // 1. Desbloquear AudioContext
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                ctx.resume();
+            } catch(e) {}
+
+            // 2. "Calentar" speechSynthesis con una utterance vacía y silenciosa
+            if ('speechSynthesis' in window) {
+                const silencio = new SpeechSynthesisUtterance('');
+                silencio.volume = 0;
+                window.speechSynthesis.speak(silencio);
+            }
         }
+
+        // Escuchar CUALQUIER primer clic en la página para desbloquear
+        document.addEventListener('click', _desbloquearAudio, { once: true });
+
+        // Pre-carga de voces (necesario en HTTPS)
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = _iniciarVoces;
-            _iniciarVoces();
+            window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+            window.speechSynthesis.getVoices();
         }
 
         function cantarBalota(letra, numero) {
             if (!('speechSynthesis' in window)) return;
-            // Cancelar cualquier audio pendiente (fix para Chrome en HTTPS)
             window.speechSynthesis.cancel();
-            // Pequeño delay: permite que cancel() limpie la cola antes de speak()
             setTimeout(() => {
-                const mensaje = new SpeechSynthesisUtterance(`${letra} ${numero}`);
-                mensaje.lang = 'es-ES';
-                mensaje.rate = 1.0;
-                // Buscar voz en español si está disponible
+                const msg = new SpeechSynthesisUtterance(`${letra} ${numero}`);
+                msg.lang = 'es-ES';
+                msg.rate = 1.0;
+                msg.volume = 1.0;
                 const voces = window.speechSynthesis.getVoices();
                 const vozES = voces.find(v => v.lang.startsWith('es'));
-                if (vozES) mensaje.voice = vozES;
-                window.speechSynthesis.speak(mensaje);
-            }, 50);
+                if (vozES) msg.voice = vozES;
+                window.speechSynthesis.speak(msg);
+            }, 80);
         }
 
         function esFigura(fig, r, c) {
