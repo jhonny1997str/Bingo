@@ -1150,13 +1150,32 @@
             document.getElementById('ganador-modal').style.display = 'flex';
         }
 
+        // Pre-cargar voces al arrancar (necesario en HTTPS / GitHub Pages)
+        let _vocesListas = false;
+        function _iniciarVoces() {
+            const voces = window.speechSynthesis.getVoices();
+            if (voces.length > 0) _vocesListas = true;
+        }
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = _iniciarVoces;
+            _iniciarVoces();
+        }
+
         function cantarBalota(letra, numero) {
-            if ('speechSynthesis' in window) {
+            if (!('speechSynthesis' in window)) return;
+            // Cancelar cualquier audio pendiente (fix para Chrome en HTTPS)
+            window.speechSynthesis.cancel();
+            // Pequeño delay: permite que cancel() limpie la cola antes de speak()
+            setTimeout(() => {
                 const mensaje = new SpeechSynthesisUtterance(`${letra} ${numero}`);
                 mensaje.lang = 'es-ES';
                 mensaje.rate = 1.0;
+                // Buscar voz en español si está disponible
+                const voces = window.speechSynthesis.getVoices();
+                const vozES = voces.find(v => v.lang.startsWith('es'));
+                if (vozES) mensaje.voice = vozES;
                 window.speechSynthesis.speak(mensaje);
-            }
+            }, 50);
         }
 
         function esFigura(fig, r, c) {
