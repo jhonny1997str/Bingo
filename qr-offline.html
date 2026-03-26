@@ -1,34 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Generador QR Permanente - Bingo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; margin-top: 20px; }
-        .qr-card { background: white; padding: 10px; border-radius: 8px; color: #1e293b; }
-        .qr-number { font-weight: bold; margin-bottom: 8px; font-size: 14px; }
-        .canvas-container { display: flex; justify-content: center; margin-bottom: 5px; }
-        button { background: #22c55e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        body {
+            font-family: sans-serif;
+            background: #0f172a;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .qr-card {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            color: #1e293b;
+        }
+
+        .qr-number {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        button {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
+
 <body>
 
     <h1>🎯 Generador de QRs Permanentes (1-50)</h1>
     <p>Estos códigos son fijos y vinculados a tu sistema de Bingo.</p>
-    
+
     <div id="qrcode-grid" class="grid"></div>
 
     <script>
-        window.onload = function() {
+        window.onload = function () {
             const grid = document.getElementById('qrcode-grid');
 
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 70; i++) {
                 // 1. Crear el contenedor de la tarjeta
                 const card = document.createElement('div');
                 card.className = 'qr-card';
-                
+
                 // 2. Título de la tabla
                 const title = document.createElement('div');
                 title.className = 'qr-number';
@@ -49,12 +87,13 @@
                     text: "TABLA:" + i,
                     width: 128,
                     height: 128,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff",
-                    correctLevel : QRCode.CorrectLevel.H // Máxima resistencia
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H // Máxima resistencia
                 });
             }
         };
     </script>
 </body>
+
 </html>

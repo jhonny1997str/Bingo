@@ -113,10 +113,73 @@
             color: white;
         }
 
+        /* ESTILO LLAMATIVO PARA EL BOTON PRINCIPAL DE BALOTA */
         button#btn-draw {
-            background: #f59e0b;
-            color: white;
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            color: #ffffff;
             display: none;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 18px 25px;
+            border-radius: 18px;
+            border: 3px solid #fbbf24;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse-draw 2s infinite;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            align-self: center;
+            /* Alineado para la barra de display */
+        }
+
+        button#btn-draw:hover {
+            transform: scale(1.08) translateY(-3px) !important;
+            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.5) !important;
+            background: linear-gradient(135deg, #fbbf24, #f97316);
+            opacity: 1 !important;
+            /* sobreescribe opacidad hover genérica */
+        }
+
+        button#btn-draw:active {
+            transform: scale(0.95) !important;
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4) !important;
+        }
+
+        @keyframes pulse-draw {
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes blink-winner {
+
+            0%,
+            100% {
+                background: linear-gradient(135deg, #f59e0b, #ea580c);
+                box-shadow: 0 0 10px #f59e0b;
+                transform: scale(1);
+                border-color: #fbbf24;
+            }
+
+            50% {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                box-shadow: 0 0 30px #22c55e, inset 0 0 15px white;
+                transform: scale(1.1);
+                border-color: #fff;
+                color: white;
+            }
+        }
+
+        .alerta-ganador {
+            animation: blink-winner 0.6s infinite !important;
         }
 
         button#btn-pop {
@@ -694,12 +757,19 @@
             <option value="letra_medio_ing">Letra + Medio Llena ING</option>
             <option value="cruz_pequena_ing">Cruz Pequeña ING</option>
             <option value="cuatro_esquinas">Cuatro Esquinas</option>
+            <option value="cuatro_esquinas_y_lleno">Cuatro Esquinas + Tabla Llena</option>
         </select>
         <select id="tipo-figura" onchange="dibujarMapaGuia()">
             <option value="L">Figura L</option>
             <option value="O">Figura O</option>
             <option value="X">Figura X</option>
             <option value="Z">Figura Z</option>
+            <option value="N">Figura N</option>
+            <option value="U">Figura U</option>
+            <option value="P">Figura P</option>
+            <option value="H">Figura H</option>
+            <option value="A">Figura A</option>
+            <option value="O_pequena">O Pequeña</option>
             <option value="cruz_p">Cruz Pequeña</option>
             <option value="cruz_g">Cruz Grande</option>
             <option value="L_ing">L en ING</option>
@@ -707,12 +777,13 @@
             <option value="cuatro_esquinas_ing">Cuatro Esquinas en ING</option>
             <option value="solo_lleno">Solo Lleno</option>
             <option value="medio_lleno">Medio Lleno ING</option>
+            <option value="medio_lleno_bin">Medio Lleno (BIN)</option>
+            <option value="medio_lleno_ngo">Medio Lleno (NGO)</option>
         </select>
         <button id="btn-start" onclick="iniciarBingoFijo()">INICIAR JUEGO 🔒</button>
         <div style="border-left: 2px solid #475569; height: 30px; margin: 0 10px;"></div>
         <input type="number" id="check-id" class="input-fijas input-search" placeholder="# ID">
         <button id="btn-check" onclick="verificarTablaManual()">VERIFICAR 🔍</button>
-        <button id="btn-draw" onclick="sacarBalota()">SACAR BALOTA 🎰</button>
         <div style="border-left: 2px solid #475569; height: 30px; margin: 0 10px;"></div>
         <button id="btn-nuevo-juego" onclick="nuevoJuego()" style="background: #8b5cf6; color: white;">NUEVO JUEGO
             🔄</button>
@@ -734,10 +805,14 @@
     </div>
 
     <!-- TABLAS REGISTRADAS -->
-    <div class="tablas-registradas">
-        <h4 style="color: #38bdf8; margin: 0 0 10px 0;">📋 TABLAS REGISTRADAS (1-50):</h4>
+    <details class="tablas-registradas" open>
+        <summary
+            style="font-size: 14px; color: #38bdf8; font-weight: bold; cursor: pointer; outline: none; margin-bottom: 10px; list-style: none;">
+            📋 TABLAS REGISTRADAS (1-70) <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Toca aquí
+                para minimizar y ahorrar espacio)</span>
+        </summary>
         <div class="tablas-lista" id="tablas-lista"></div>
-    </div>
+    </details>
 
     <div class="top-display">
         <div class="history-section">
@@ -748,6 +823,7 @@
             <div class="balota-letra" id="display-l">--</div>
             <div class="balota-numero" id="display-n">--</div>
         </div>
+        <button id="btn-draw" onclick="sacarBalota()">SACAR BALOTA 🎰</button>
         <div class="mini-map-guide">
             <h4>MAPA DE FIGURA</h4>
             <div class="m-grid" id="guia-visual"></div>
@@ -850,8 +926,10 @@
                         esParteFigura = true;
                     } else if (modo === "lleno_ing") {
                         esParteFigura = (cIndex >= 1 && cIndex <= 3);
+                    } else if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
+                        esParteFigura = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                     } else {
-                        esParteFigura = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                        esParteFigura = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "N" && (cIndex === 0 || cIndex === 4 || cIndex === r)) || (fig === "U" && (cIndex === 0 || cIndex === 4 || r === 4)) || (fig === "P" && (cIndex === 0 || r === 0 || r === 2 || (cIndex === 4 && r <= 2))) || (fig === "H" && (cIndex === 0 || cIndex === 4 || r === 2)) || (fig === "A" && (cIndex === 0 || cIndex === 4 || r === 0 || r === 2)) || (fig === "O_pequena" && (r >= 1 && r <= 3 && cIndex >= 1 && cIndex <= 3 && !(r === 2 && cIndex === 2))) || (fig === "medio_lleno_bin" && cIndex <= 2) || (fig === "medio_lleno_ngo" && cIndex >= 2) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
                     }
 
                     let esParteLleno = false;
@@ -864,7 +942,7 @@
                     } else if (modo === "cuatro_esquinas") {
                         esParteLleno = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                     } else {
-                        esParteLleno = true; // Para "letra_y_entera"
+                        esParteLleno = true; // Para "letra_y_entera" y "cuatro_esquinas_y_lleno"
                     }
 
                     let clase = "";
@@ -873,9 +951,9 @@
                     } else {
                         let isDrawn = balotasSacadas.includes(val);
                         if (isDrawn) {
-                            if ((modo.includes("letra") && esParteFigura) ||
-                                (!modo.includes("letra") && esParteLleno) ||
-                                (gano && res && res.tieneLleno && esParteLleno)) {
+                            let highlightFigura = (modo.includes("letra") || modo === "cuatro_esquinas_y_lleno") && esParteFigura;
+                            let highlightLleno = (!modo.includes("letra") && modo !== "cuatro_esquinas_y_lleno" && esParteLleno);
+                            if (highlightFigura || highlightLleno || (gano && res && res.tieneLleno && esParteLleno)) {
                                 clase = "figura-azul";
                             } else {
                                 clase = "marked";
@@ -905,11 +983,11 @@
             document.getElementById('ganador-modal').style.display = 'flex';
         }
 
-        function cantarBingo(tipo, id) {
+        function cantarBalota(letra, numero) {
             if ('speechSynthesis' in window) {
-                const mensaje = new SpeechSynthesisUtterance();
-                mensaje.text = `¡Bingo! Ganador de ${tipo}, tabla número ${id}`;
+                const mensaje = new SpeechSynthesisUtterance(`${letra} ${numero}`);
                 mensaje.lang = 'es-ES';
+                mensaje.rate = 1.0;
                 window.speechSynthesis.speak(mensaje);
             }
         }
@@ -925,8 +1003,10 @@
                         isTarget = true;
                     } else if (modo === "lleno_ing") {
                         isTarget = (c >= 1 && c <= 3);
+                    } else if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
+                        isTarget = (r === 0 && c === 0) || (r === 0 && c === 4) || (r === 4 && c === 0) || (r === 4 && c === 4);
                     } else {
-                        isTarget = (fig === "L" && (c === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || c === 0 || c === 4)) || (fig === "X" && (c === r || c === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || c === (4 - r))) || (fig === "cruz_p" && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cruz_g" && (c === 2 || r === 2)) || (fig === "L_ing" && ((c === 1) || (r === 4 && c >= 1 && c <= 3))) || (fig === "cruz_p_ing" && c >= 1 && c <= 3 && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cuatro_esquinas_ing" && c >= 1 && c <= 3 && ((r === 0 && (c === 1 || c === 3)) || (r === 4 && (c === 1 || c === 3))));
+                        isTarget = (fig === "L" && (c === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || c === 0 || c === 4)) || (fig === "X" && (c === r || c === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || c === (4 - r))) || (fig === "N" && (c === 0 || c === 4 || c === r)) || (fig === "U" && (c === 0 || c === 4 || r === 4)) || (fig === "P" && (c === 0 || r === 0 || r === 2 || (c === 4 && r <= 2))) || (fig === "H" && (c === 0 || c === 4 || r === 2)) || (fig === "A" && (c === 0 || c === 4 || r === 0 || r === 2)) || (fig === "O_pequena" && (r >= 1 && r <= 3 && c >= 1 && c <= 3 && !(r === 2 && c === 2))) || (fig === "medio_lleno_bin" && c <= 2) || (fig === "medio_lleno_ngo" && c >= 2) || (fig === "cruz_p" && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cruz_g" && (c === 2 || r === 2)) || (fig === "L_ing" && ((c === 1) || (r === 4 && c >= 1 && c <= 3))) || (fig === "cruz_p_ing" && c >= 1 && c <= 3 && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cuatro_esquinas_ing" && c >= 1 && c <= 3 && ((r === 0 && (c === 1 || c === 3)) || (r === 4 && (c === 1 || c === 3))));
                     }
                     html += `<div class="m-cell ${isTarget ? 'target' : ''}"></div>`;
                 }
@@ -935,13 +1015,18 @@
         }
 
         function generarColumnaFija(min, max, seed) {
-            let nums = []; let localSeed = seed;
-            while (nums.length < 5) {
-                localSeed = (localSeed * 9301 + 49297) % 233280;
-                let val = min + Math.floor((localSeed / 233280) * (max - min + 1));
-                if (!nums.includes(val)) nums.push(val);
+            let res = [];
+            let nums = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+            // Generador pseudo-aleatorio para que la tabla siempre sea la misma según su ID
+            let pseudoRandom = (s) => {
+                var x = Math.sin(s) * 10000;
+                return x - Math.floor(x);
+            };
+            for (let i = 0; i < 5; i++) {
+                let index = Math.floor(pseudoRandom(seed + i) * nums.length);
+                res.push(nums.splice(index, 1)[0]);
             }
-            return nums.sort((a, b) => a - b);
+            return res.sort((a, b) => a - b);
         }
 
         function iniciarBingoFijo() {
@@ -1015,6 +1100,7 @@
                 ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
                 document.getElementById('status-board').innerHTML = "¡JUEGO INICIADO!";
                 document.getElementById('btn-draw').style.display = "inline-block";
+                document.getElementById('btn-draw').classList.remove('alerta-ganador');
                 initHistorialUI();
                 dibujarMapaGuia();
                 idsTablas.forEach(id => {
@@ -1058,9 +1144,13 @@
 
         function sacarBalota() {
             if (sequence.length === 0) return; // PERMITIR CONTINUAR HASTA QUE SE ACABEN LAS BALOTAS
+
             let n = sequence.shift();
             let l = n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O';
             balotasSacadas.push(n);
+
+            // Cantar la balota en voz alta
+            cantarBalota(l, n);
             acumulados[l].push(n); acumulados[l].sort((a, b) => a - b);
             document.getElementById(`row-${l}`).innerHTML = acumulados[l].map(num => `<span>${num}</span>`).join('');
             ultimas5.unshift({ l, n }); if (ultimas5.length > 5) ultimas5.pop();
@@ -1088,7 +1178,7 @@
                     ganadorLetraId = t.id;
                     document.getElementById(`card-${t.id}`).classList.add('winner-letra');
                     actualizarStatus();
-                    cantarBingo("Figura", t.id);
+                    document.getElementById('btn-draw').classList.add('alerta-ganador');
                 }
                 if (ganadorLlenoId === null && res.tieneLleno) {
                     if (t.id === ganadorLetraId) continue;
@@ -1096,7 +1186,7 @@
                     document.getElementById(`card-${t.id}`).classList.add('winner-lleno');
                     actualizarStatus();
                     actualizarVentanaExterna();
-                    cantarBingo("Bingo Lleno", t.id);
+                    document.getElementById('btn-draw').classList.add('alerta-ganador');
                     // NO TERMINAR EL JUEGO - PERMITIR CONTINUAR
                 }
             }
@@ -1123,8 +1213,18 @@
                         let isEsquina = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                         if (isEsquina && !balotasSacadas.includes(num)) tieneLleno = false;
                     }
+                    else if (modo === "cuatro_esquinas_y_lleno") {
+                        // tieneLleno will only be true if ALL cells are covered
+                        if (!balotasSacadas.includes(num)) tieneLleno = false;
+                    }
                     else { if (!balotasSacadas.includes(num)) tieneLleno = false; }
-                    let esParte = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+
+                    let esParte = false;
+                    if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
+                        esParte = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
+                    } else {
+                        esParte = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "N" && (cIndex === 0 || cIndex === 4 || cIndex === r)) || (fig === "U" && (cIndex === 0 || cIndex === 4 || r === 4)) || (fig === "P" && (cIndex === 0 || r === 0 || r === 2 || (cIndex === 4 && r <= 2))) || (fig === "H" && (cIndex === 0 || cIndex === 4 || r === 2)) || (fig === "A" && (cIndex === 0 || cIndex === 4 || r === 0 || r === 2)) || (fig === "O_pequena" && (r >= 1 && r <= 3 && cIndex >= 1 && cIndex <= 3 && !(r === 2 && cIndex === 2))) || (fig === "medio_lleno_bin" && cIndex <= 2) || (fig === "medio_lleno_ngo" && cIndex >= 2) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                    }
                     if (esParte && !balotasSacadas.includes(num)) tieneLetra = false;
                 });
             }
@@ -1158,6 +1258,7 @@
             document.getElementById('grid-tablas').innerHTML = "";
             document.getElementById('status-board').innerHTML = "NUEVO JUEGO - ESCANEA QR o INGRESA MANUALMENTE";
             document.getElementById('btn-draw').style.display = "none";
+            document.getElementById('btn-draw').classList.remove('alerta-ganador');
             document.getElementById('lista-tablas').value = "";
             ['B', 'I', 'N', 'G', 'O'].forEach(l => document.getElementById(`row-${l}`).innerHTML = "");
             initHistorialUI();
@@ -1245,8 +1346,8 @@
         }
 
         function registrarTablaQR(tablaId) {
-            if (tablaId < 1 || tablaId > 50) {
-                document.getElementById('scanner-status').innerHTML = '<span style="color: #ef4444;">❌ Número de tabla inválido (1-50)</span>';
+            if (tablaId < 1 || tablaId > 70) {
+                document.getElementById('scanner-status').innerHTML = '<span style="color: #ef4444;">❌ Número de tabla inválido (1-70)</span>';
                 return;
             }
 
@@ -1314,7 +1415,7 @@
         function actualizarListaTablas() {
             const container = document.getElementById('tablas-lista');
             let html = '';
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 70; i++) {
                 const registrada = tablasRegistradas.has(i);
                 html += `<div class="tabla-${registrada ? 'registrada' : 'disponible'}">${i}</div>`;
             }
@@ -1325,7 +1426,7 @@
             const grid = document.getElementById('qr-grid');
             grid.innerHTML = '';
 
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 70; i++) {
                 const qrItem = document.createElement('div');
                 qrItem.className = 'qr-item';
                 qrItem.innerHTML = `
@@ -1352,8 +1453,8 @@
 
         function generarQRIndividual() {
             const numeroTabla = parseInt(document.getElementById('qr-individual').value);
-            if (!numeroTabla || numeroTabla < 1 || numeroTabla > 50) {
-                lanzarAlerta("Ingresa un número de tabla válido (1-50)", "error");
+            if (!numeroTabla || numeroTabla < 1 || numeroTabla > 70) {
+                lanzarAlerta("Ingresa un número de tabla válido (1-70)", "error");
                 return;
             }
 
@@ -1442,7 +1543,7 @@
 
             // Generar todos los QR en secuencia
             const promises = [];
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 70; i++) {
                 promises.push(agregarQRAlPDF(i));
             }
 

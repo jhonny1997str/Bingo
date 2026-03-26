@@ -126,16 +126,17 @@
             box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4), inset 0 2px 5px rgba(255, 255, 255, 0.3);
             text-transform: uppercase;
             letter-spacing: 1px;
-            animation: pulse-draw 2s infinite;
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            align-self: center; /* Alineado para la barra de display */
+            align-self: center;
+            /* Alineado para la barra de display */
         }
 
         button#btn-draw:hover {
             transform: scale(1.08) translateY(-3px) !important;
             box-shadow: 0 15px 35px rgba(245, 158, 11, 0.6), inset 0 2px 5px rgba(255, 255, 255, 0.5) !important;
             background: linear-gradient(135deg, #fbbf24, #f97316);
-            opacity: 1 !important; /* sobreescribe opacidad hover genérica */
+            opacity: 1 !important;
+            /* sobreescribe opacidad hover genérica */
         }
 
         button#btn-draw:active {
@@ -144,18 +145,44 @@
         }
 
         @keyframes pulse-draw {
-            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7), inset 0 2px 5px rgba(255, 255, 255, 0.3); }
-            70% { box-shadow: 0 0 0 15px rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3); }
-            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3); }
+            0% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0), inset 0 2px 5px rgba(255, 255, 255, 0.3);
+            }
         }
 
         @keyframes blink-winner {
-            0%, 100% { background: linear-gradient(135deg, #f59e0b, #ea580c); box-shadow: 0 0 10px #f59e0b; transform: scale(1); border-color: #fbbf24; }
-            50% { background: linear-gradient(135deg, #22c55e, #16a34a); box-shadow: 0 0 30px #22c55e, inset 0 0 15px white; transform: scale(1.1); border-color: #fff; color: white;}
+            0% {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                box-shadow: 0 0 40px #22c55e, 0 0 80px rgba(34,197,94,0.5);
+                transform: scale(1.12);
+                border-color: #fff;
+                color: white;
+            }
+            50% {
+                background: linear-gradient(135deg, #4ade80, #22c55e);
+                box-shadow: 0 0 25px #22c55e;
+                transform: scale(1.04);
+                border-color: #86efac;
+            }
+            100% {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                box-shadow: 0 0 40px #22c55e, 0 0 80px rgba(34,197,94,0.5);
+                transform: scale(1.12);
+                border-color: #fff;
+                color: white;
+            }
         }
 
         .alerta-ganador {
-            animation: blink-winner 0.6s infinite !important;
+            animation: blink-winner 0.5s ease-in-out 6 !important;
         }
 
         button#btn-pop {
@@ -702,6 +729,119 @@
             font-weight: bold;
             cursor: pointer;
         }
+
+        /* PANEL CALCULADORA DE PREMIO */
+        .premio-bar {
+            background: linear-gradient(135deg, #1e293b, #0f2040);
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 10px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 18px rgba(251,191,36,0.2);
+        }
+
+        .premio-bar label {
+            color: #94a3b8;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .premio-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .premio-stat span.val {
+            font-size: 22px;
+            font-weight: 900;
+            color: #fbbf24;
+            line-height: 1;
+        }
+
+        .premio-stat span.val.verde {
+            color: #22c55e;
+        }
+
+        .premio-input {
+            background: #0f172a;
+            color: #38bdf8;
+            border: 2px solid #38bdf8;
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 18px;
+            font-weight: 900;
+            width: 130px;
+            text-align: center;
+        }
+
+        .btn-mostrar-premio {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #1e293b;
+            font-size: 22px;
+            font-weight: 900;
+            padding: 10px 22px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(251,191,36,0.4);
+            transition: all 0.2s;
+        }
+
+        .btn-mostrar-premio:hover {
+            transform: scale(1.08);
+            box-shadow: 0 6px 25px rgba(251,191,36,0.6);
+        }
+
+        /* MODAL PREMIO GRANDE */
+        #premio-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.93);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            cursor: pointer;
+        }
+
+        #premio-modal .pm-label {
+            color: #94a3b8;
+            font-size: 28px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 10px;
+        }
+
+        #premio-modal .pm-monto {
+            font-size: clamp(60px, 14vw, 130px);
+            font-weight: 900;
+            color: #fbbf24;
+            text-shadow: 0 0 40px rgba(251,191,36,0.8), 0 0 80px rgba(251,191,36,0.4);
+            line-height: 1;
+            animation: premioGlow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes premioGlow {
+            from { text-shadow: 0 0 30px rgba(251,191,36,0.6); transform: scale(1); }
+            to   { text-shadow: 0 0 70px rgba(251,191,36,1), 0 0 120px rgba(34,197,94,0.4); transform: scale(1.04); }
+        }
+
+        #premio-modal .pm-hint {
+            color: #475569;
+            font-size: 14px;
+            margin-top: 30px;
+        }
     </style>
 </head>
 
@@ -734,6 +874,8 @@
             <option value="cruz_pequena_ing">Cruz Pequeña ING</option>
             <option value="cuatro_esquinas">Cuatro Esquinas</option>
             <option value="cuatro_esquinas_y_lleno">Cuatro Esquinas + Tabla Llena</option>
+            <option value="medio_bin">Medio Bingo BIN (der.)</option>
+            <option value="medio_ngo">Medio Bingo NGO (izq.)</option>
         </select>
         <select id="tipo-figura" onchange="dibujarMapaGuia()">
             <option value="L">Figura L</option>
@@ -742,6 +884,11 @@
             <option value="Z">Figura Z</option>
             <option value="N">Figura N</option>
             <option value="U">Figura U</option>
+            <option value="P">Figura P</option>
+            <option value="A">Figura A</option>
+            <option value="H">Figura H</option>
+            <option value="M">Figura M</option>
+            <option value="O_p">O Pequeña</option>
             <option value="cruz_p">Cruz Pequeña</option>
             <option value="cruz_g">Cruz Grande</option>
             <option value="L_ing">L en ING</option>
@@ -761,6 +908,48 @@
             📱</button>
     </div>
 
+    <!-- CALCULADORA DE PREMIO -->
+    <div class="premio-bar">
+        <div class="premio-stat">
+            <label>Tablas en juego</label>
+            <span class="val" id="premio-count">0</span>
+        </div>
+        <div style="color:#334155;font-size:22px;">&times;</div>
+        <div class="premio-stat">
+            <label>Precio por tabla ($)</label>
+            <input type="number" id="precio-tabla" class="premio-input" placeholder="0" min="0" oninput="calcularPremio()">
+        </div>
+        <div style="color:#334155;font-size:22px;">=</div>
+        <div class="premio-stat">
+            <label>Premio neto</label>
+            <span class="val verde" id="premio-neto">$ 0</span>
+        </div>
+        <button class="btn-mostrar-premio" onclick="mostrarPremioGrande()" title="Mostrar premio en pantalla grande">💲 PREMIO</button>
+        <button class="btn-mostrar-premio" onclick="mostrarPremioLetraLleno()" title="Premio Letra + Lleno" style="background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;">🏆 LETRA+LLENO</button>
+    </div>
+
+    <!-- MODAL PREMIO GRANDE (un solo ganador) -->
+    <div id="premio-modal" onclick="this.style.display='none'">
+        <div class="pm-label">🏆 PREMIO 🏆</div>
+        <div class="pm-monto" id="pm-monto-big">$ 0</div>
+        <div class="pm-hint">Toca en cualquier lugar para cerrar</div>
+    </div>
+
+    <!-- MODAL PREMIO LETRA + LLENO (dos ganadores) -->
+    <div id="premio-doble-modal" onclick="this.style.display='none'" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:3000;cursor:pointer;gap:30px;">
+        <div style="color:#94a3b8;font-size:20px;font-weight:700;letter-spacing:3px;text-transform:uppercase;">Modo Letra + Lleno</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="color:#a78bfa;font-size:18px;font-weight:700;letter-spacing:2px;">🔡 GANADOR LETRA</div>
+            <div class="pm-monto" id="pm-letra-big" style="font-size:clamp(45px,10vw,100px);color:#a78bfa;text-shadow:0 0 40px rgba(167,139,250,0.8);">$ 0</div>
+        </div>
+        <div style="color:#475569;font-size:28px;">+</div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="color:#fbbf24;font-size:18px;font-weight:700;letter-spacing:2px;">🏆 GANADOR LLENO</div>
+            <div class="pm-monto" id="pm-lleno-big" style="font-size:clamp(45px,10vw,100px);color:#fbbf24;">$ 0</div>
+        </div>
+        <div style="color:#475569;font-size:14px;margin-top:10px;">Toca para cerrar</div>
+    </div>
+
     <!-- SECCIÓN SCANNER QR -->
     <div class="qr-scanner-section" id="qr-scanner-section">
         <h3 style="color: #38bdf8; text-align: center; margin-bottom: 15px;">📱 SCANNER QR - Registra Tablas</h3>
@@ -776,8 +965,10 @@
 
     <!-- TABLAS REGISTRADAS -->
     <details class="tablas-registradas" open>
-        <summary style="font-size: 14px; color: #38bdf8; font-weight: bold; cursor: pointer; outline: none; margin-bottom: 10px; list-style: none;">
-            📋 TABLAS REGISTRADAS (1-50) <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Toca aquí para minimizar y ahorrar espacio)</span>
+        <summary
+            style="font-size: 14px; color: #38bdf8; font-weight: bold; cursor: pointer; outline: none; margin-bottom: 10px; list-style: none;">
+            📋 TABLAS REGISTRADAS (1-70) <span style="font-size: 11px; color: #94a3b8; font-weight: normal;">(Toca aquí
+                para minimizar y ahorrar espacio)</span>
         </summary>
         <div class="tablas-lista" id="tablas-lista"></div>
     </details>
@@ -894,15 +1085,23 @@
                         esParteFigura = true;
                     } else if (modo === "lleno_ing") {
                         esParteFigura = (cIndex >= 1 && cIndex <= 3);
+                    } else if (modo === "medio_bin") {
+                        esParteFigura = (cIndex >= 0 && cIndex <= 2);
+                    } else if (modo === "medio_ngo") {
+                        esParteFigura = (cIndex >= 2 && cIndex <= 4);
                     } else if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
                         esParteFigura = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                     } else {
-                        esParteFigura = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "N" && (cIndex === 0 || cIndex === 4 || cIndex === r)) || (fig === "U" && (cIndex === 0 || cIndex === 4 || r === 4)) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                        esParteFigura = esFigura(fig, r, cIndex);
                     }
 
                     let esParteLleno = false;
                     if (modo === "lleno_ing" || modo === "letra_medio_ing") {
                         esParteLleno = (cIndex >= 1 && cIndex <= 3);
+                    } else if (modo === "medio_bin") {
+                        esParteLleno = (cIndex >= 0 && cIndex <= 2);
+                    } else if (modo === "medio_ngo") {
+                        esParteLleno = (cIndex >= 2 && cIndex <= 4);
                     } else if (modo === "solo_lleno") {
                         esParteLleno = true;
                     } else if (modo === "cruz_pequena_ing") {
@@ -910,7 +1109,7 @@
                     } else if (modo === "cuatro_esquinas") {
                         esParteLleno = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                     } else {
-                        esParteLleno = true; // Para "letra_y_entera" y "cuatro_esquinas_y_lleno"
+                        esParteLleno = true;
                     }
 
                     let clase = "";
@@ -960,6 +1159,31 @@
             }
         }
 
+        function esFigura(fig, r, c) {
+            if (fig === "L") return (c === 0 || r === 4);
+            if (fig === "O") return (r === 0 || r === 4 || c === 0 || c === 4);
+            if (fig === "X") return (c === r || c === (4 - r));
+            if (fig === "Z") return (r === 0 || r === 4 || c === (4 - r));
+            if (fig === "N") return (c === 0 || c === 4 || c === r);
+            if (fig === "U") return (c === 0 || c === 4 || r === 4);
+            // Figura P: columna izq + fila 0 + fila 2 + (c=1,r=0..2)
+            if (fig === "P") return (c === 0) || (r === 0 && c <= 1) || (r === 2 && c <= 1) || (r === 1 && c === 1);
+            // Figura A: dos patas (c=0, c=4) + techo (r=0) + travesaño (r=2)
+            if (fig === "A") return (c === 0 || c === 4) || (r === 0 && c >= 1 && c <= 3) || (r === 2 && c >= 1 && c <= 3);
+            // Figura H: dos columnas externas (c=0, c=4) + travesaño central (r=2)
+            if (fig === "H") return (c === 0 || c === 4) || (r === 2 && c >= 1 && c <= 3);
+            // Figura M: col 0, col 4, fila 0, diagonal baja-izq, diagonal baja-der (picos)
+            if (fig === "M") return (c === 0 || c === 4) || (r === 0) || (r === 1 && c === 1) || (r === 1 && c === 3) || (r === 2 && c === 2);
+            // O Pequeña (3x3 interior): filas 1-3, cols 1-3, solo borde
+            if (fig === "O_p") return (c >= 1 && c <= 3) && (r >= 1 && r <= 3) && (r === 1 || r === 3 || c === 1 || c === 3);
+            if (fig === "cruz_p") return ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3));
+            if (fig === "cruz_g") return (c === 2 || r === 2);
+            if (fig === "L_ing") return ((c === 1) || (r === 4 && c >= 1 && c <= 3));
+            if (fig === "cruz_p_ing") return c >= 1 && c <= 3 && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3));
+            if (fig === "cuatro_esquinas_ing") return c >= 1 && c <= 3 && ((r === 0 && (c === 1 || c === 3)) || (r === 4 && (c === 1 || c === 3)));
+            return false;
+        }
+
         function dibujarMapaGuia() {
             const fig = document.getElementById('tipo-figura').value;
             const modo = document.getElementById('modo-juego').value;
@@ -971,10 +1195,14 @@
                         isTarget = true;
                     } else if (modo === "lleno_ing") {
                         isTarget = (c >= 1 && c <= 3);
+                    } else if (modo === "medio_bin") {
+                        isTarget = (c >= 0 && c <= 2);
+                    } else if (modo === "medio_ngo") {
+                        isTarget = (c >= 2 && c <= 4);
                     } else if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
                         isTarget = (r === 0 && c === 0) || (r === 0 && c === 4) || (r === 4 && c === 0) || (r === 4 && c === 4);
                     } else {
-                        isTarget = (fig === "L" && (c === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || c === 0 || c === 4)) || (fig === "X" && (c === r || c === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || c === (4 - r))) || (fig === "N" && (c === 0 || c === 4 || c === r)) || (fig === "U" && (c === 0 || c === 4 || r === 4)) || (fig === "cruz_p" && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cruz_g" && (c === 2 || r === 2)) || (fig === "L_ing" && ((c === 1) || (r === 4 && c >= 1 && c <= 3))) || (fig === "cruz_p_ing" && c >= 1 && c <= 3 && ((c === 2 && r >= 1 && r <= 3) || (r === 2 && c >= 1 && c <= 3))) || (fig === "cuatro_esquinas_ing" && c >= 1 && c <= 3 && ((r === 0 && (c === 1 || c === 3)) || (r === 4 && (c === 1 || c === 3))));
+                        isTarget = esFigura(fig, r, c);
                     }
                     html += `<div class="m-cell ${isTarget ? 'target' : ''}"></div>`;
                 }
@@ -1106,8 +1334,12 @@
         function actualizarVentanaExterna() { }
 
         function sacarBalota() {
-            if (sequence.length === 0) return; // PERMITIR CONTINUAR HASTA QUE SE ACABEN LAS BALOTAS
-            
+            if (sequence.length === 0) return;
+
+            // Al sacar nueva balota, apagar el parpadeo del botón
+            const btnDraw = document.getElementById('btn-draw');
+            btnDraw.classList.remove('alerta-ganador');
+
             let n = sequence.shift();
             let l = n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O';
             balotasSacadas.push(n);
@@ -1126,22 +1358,26 @@
             // REINICIAR ANIMACIÓN DE BALOTA
             const display = document.getElementById('balota-display');
             display.classList.remove('rolling-animation');
-            void display.offsetWidth; // TRUCO PARA REINICIAR CSS
+            void display.offsetWidth;
             display.classList.add('rolling-animation');
 
             document.getElementById('display-l').innerText = l;
             document.getElementById('display-n').innerText = n;
 
+            let huboGanador = false;
+            const modo = document.getElementById('modo-juego').value;
+            const modosConSoloLleno = ["solo_lleno", "lleno_ing", "cruz_pequena_ing", "cuatro_esquinas", "medio_bin", "medio_ngo"];
+
             for (let t of tablas) {
                 let cell = document.getElementById(`t${t.id}-${n}`);
                 if (cell) cell.classList.add('marked');
                 let res = verificarGanadorInterno(t);
-                let modo = document.getElementById('modo-juego').value;
-                if (ganadorLetraId === null && res.tieneLetra && modo !== "solo_lleno" && modo !== "lleno_ing" && modo !== "cruz_pequena_ing" && modo !== "cuatro_esquinas") {
+
+                if (ganadorLetraId === null && res.tieneLetra && !modosConSoloLleno.includes(modo)) {
                     ganadorLetraId = t.id;
                     document.getElementById(`card-${t.id}`).classList.add('winner-letra');
                     actualizarStatus();
-                    document.getElementById('btn-draw').classList.add('alerta-ganador');
+                    huboGanador = true;
                 }
                 if (ganadorLlenoId === null && res.tieneLleno) {
                     if (t.id === ganadorLetraId) continue;
@@ -1149,12 +1385,18 @@
                     document.getElementById(`card-${t.id}`).classList.add('winner-lleno');
                     actualizarStatus();
                     actualizarVentanaExterna();
-                    document.getElementById('btn-draw').classList.add('alerta-ganador');
-                    // NO TERMINAR EL JUEGO - PERMITIR CONTINUAR
+                    huboGanador = true;
                 }
             }
+
+            // Alumbrar verde solo si hay ganador nuevo en esta balota
+            if (huboGanador) {
+                void btnDraw.offsetWidth; // reset animation
+                btnDraw.classList.add('alerta-ganador');
+            }
+
             actualizarVentanaExterna();
-            updateFirebase(); // Sincronizar con Firebase
+            updateFirebase();
         }
 
         function verificarGanadorInterno(t) {
@@ -1167,6 +1409,12 @@
                     if (modo === "lleno_ing") { if ((col === 'I' || col === 'N' || col === 'G') && !balotasSacadas.includes(num)) tieneLleno = false; }
                     else if (modo === "letra_medio_ing") {
                         if ((col === 'I' || col === 'N' || col === 'G') && !balotasSacadas.includes(num)) tieneLleno = false;
+                    }
+                    else if (modo === "medio_bin") {
+                        if ((col === 'B' || col === 'I' || col === 'N') && !balotasSacadas.includes(num)) tieneLleno = false;
+                    }
+                    else if (modo === "medio_ngo") {
+                        if ((col === 'N' || col === 'G' || col === 'O') && !balotasSacadas.includes(num)) tieneLleno = false;
                     }
                     else if (modo === "cruz_pequena_ing") {
                         let isCruzIng = (col === 'I' || col === 'N' || col === 'G') && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3));
@@ -1181,12 +1429,12 @@
                         if (!balotasSacadas.includes(num)) tieneLleno = false;
                     }
                     else { if (!balotasSacadas.includes(num)) tieneLleno = false; }
-                    
+
                     let esParte = false;
                     if (modo === "cuatro_esquinas" || modo === "cuatro_esquinas_y_lleno") {
                         esParte = (r === 0 && cIndex === 0) || (r === 0 && cIndex === 4) || (r === 4 && cIndex === 0) || (r === 4 && cIndex === 4);
                     } else {
-                        esParte = (fig === "L" && (cIndex === 0 || r === 4)) || (fig === "O" && (r === 0 || r === 4 || cIndex === 0 || cIndex === 4)) || (fig === "X" && (cIndex === r || cIndex === (4 - r))) || (fig === "Z" && (r === 0 || r === 4 || cIndex === (4 - r))) || (fig === "N" && (cIndex === 0 || cIndex === 4 || cIndex === r)) || (fig === "U" && (cIndex === 0 || cIndex === 4 || r === 4)) || (fig === "cruz_p" && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_g" && (cIndex === 2 || r === 2)) || (fig === "L_ing" && ((cIndex === 1) || (r === 4 && cIndex >= 1 && cIndex <= 3))) || (fig === "cruz_p_ing" && cIndex >= 1 && cIndex <= 3 && ((cIndex === 2 && r >= 1 && r <= 3) || (r === 2 && cIndex >= 1 && cIndex <= 3))) || (fig === "cuatro_esquinas_ing" && cIndex >= 1 && cIndex <= 3 && ((r === 0 && (cIndex === 1 || cIndex === 3)) || (r === 4 && (cIndex === 1 || cIndex === 3))));
+                        esParte = esFigura(fig, r, cIndex);
                     }
                     if (esParte && !balotasSacadas.includes(num)) tieneLetra = false;
                 });
@@ -1309,8 +1557,8 @@
         }
 
         function registrarTablaQR(tablaId) {
-            if (tablaId < 1 || tablaId > 50) {
-                document.getElementById('scanner-status').innerHTML = '<span style="color: #ef4444;">❌ Número de tabla inválido (1-50)</span>';
+            if (tablaId < 1 || tablaId > 70) {
+                document.getElementById('scanner-status').innerHTML = '<span style="color: #ef4444;">❌ Número de tabla inválido (1-70)</span>';
                 return;
             }
 
@@ -1378,11 +1626,13 @@
         function actualizarListaTablas() {
             const container = document.getElementById('tablas-lista');
             let html = '';
-            for (let i = 1; i <= 50; i++) {
+            for (let i = 1; i <= 70; i++) {
                 const registrada = tablasRegistradas.has(i);
                 html += `<div class="tabla-${registrada ? 'registrada' : 'disponible'}">${i}</div>`;
             }
             container.innerHTML = html;
+            // Actualizar el contador y premio automáticamente
+            calcularPremio();
         }
 
         function generarTodosQR() {
@@ -1685,6 +1935,82 @@
             if (num <= 45) return 'N';
             if (num <= 60) return 'G';
             return 'O';
+        }
+
+        // ============ CALCULADORA DE PREMIO ============
+        let _premioNetoActual = 0; // valor numérico actual del neto
+
+        function redondearAl500(valor) {
+            const miles = Math.floor(valor / 1000) * 1000;
+            const resto = valor % 1000;
+            return miles + (resto > 500 ? 500 : 0);
+        }
+
+        function redondearAl1000(valor) {
+            // ≤ 500 en los últimos 3 dígitos → baja al múltiplo de 1000
+            // >  500 en los últimos 3 dígitos → sube al siguiente 1000
+            const miles = Math.floor(valor / 1000) * 1000;
+            const resto = valor % 1000;
+            return miles + (resto > 500 ? 1000 : 0);
+        }
+
+        const _animFrames = {}; // frame por elementId independiente
+
+        function animarPremio(elId, desde, hasta, duracionMs) {
+            if (_animFrames[elId]) cancelAnimationFrame(_animFrames[elId]);
+            const inicio = performance.now();
+            function step(ahora) {
+                const t = Math.min((ahora - inicio) / duracionMs, 1);
+                const eased = 1 - Math.pow(1 - t, 3);
+                const valor = Math.round(desde + (hasta - desde) * eased);
+                document.getElementById(elId).textContent = '$ ' + valor.toLocaleString('es-CO');
+                if (t < 1) _animFrames[elId] = requestAnimationFrame(step);
+            }
+            _animFrames[elId] = requestAnimationFrame(step);
+        }
+
+        function calcularPremio() {
+            const precio = parseFloat(document.getElementById('precio-tabla').value) || 0;
+            const cantidad = tablasRegistradas.size;
+            document.getElementById('premio-count').textContent = cantidad;
+            const total = precio * cantidad;
+            const descuentoRedondeado = redondearAl500(total * 0.14);
+            const neto = total - descuentoRedondeado;
+
+            // Animar el premio-neto desde el valor anterior al nuevo
+            animarPremio('premio-neto', _premioNetoActual, neto, 600);
+            _premioNetoActual = neto;
+
+            // Si el modal grande está visible, actualizar también en tiempo real
+            const modal = document.getElementById('premio-modal');
+            if (modal.style.display === 'flex') {
+                animarPremio('pm-monto-big', 0, neto, 600);
+            }
+        }
+
+        function mostrarPremioGrande() {
+            calcularPremio();
+            const neto = _premioNetoActual;
+            document.getElementById('pm-monto-big').textContent = '$ 0';
+            document.getElementById('premio-modal').style.display = 'flex';
+            setTimeout(() => animarPremio('pm-monto-big', 0, neto, 1200), 80);
+        }
+
+        function mostrarPremioLetraLleno() {
+            calcularPremio();
+            const neto = _premioNetoActual;
+            // 28% para el ganador de letra, redondeado a 1000
+            const premioLetra = redondearAl1000(neto * 0.28);
+            const premioLleno = neto - premioLetra;
+
+            document.getElementById('pm-letra-big').textContent = '$ 0';
+            document.getElementById('pm-lleno-big').textContent = '$ 0';
+            document.getElementById('premio-doble-modal').style.display = 'flex';
+
+            setTimeout(() => {
+                animarPremio('pm-letra-big', 0, premioLetra, 1200);
+                setTimeout(() => animarPremio('pm-lleno-big', 0, premioLleno, 1200), 300);
+            }, 80);
         }
     </script>
 </body>
